@@ -4,7 +4,12 @@
 
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2 style="font-weight: 400; font-size: 20px; margin: 0;">Список учеников</h2>
+    <h2 style="font-weight: 400; font-size: 20px; margin: 0;">
+        Список учеников
+        {% if students_count is not None %}
+            <span style="color: #666; font-size: 20px;">({{ students_count }})</span>
+        {% endif %}
+    </h2>
     <a href="{% url 'student_create' %}" class="btn">+ Создать ученика</a>
 </div>
 

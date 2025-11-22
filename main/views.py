@@ -31,7 +31,11 @@ def student_list(request):
         messages.error(request, 'Профиль репетитора не найден.')
         return redirect('dashboard')
     students = Student.objects.filter(tutor=tutor, is_active=True)
-    return render(request, 'main/student_list.html', {'students': students})
+    students_count = students.count()
+    return render(request, 'main/student_list.html', {
+        'students': students,
+        'students_count': students_count
+    })
 
 
 @login_required
