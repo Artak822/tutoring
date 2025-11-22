@@ -1,0 +1,29 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Удалить ученика{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <a href="{% url 'student_detail' student.pk %}" class="btn btn-secondary">← Назад</a>
+</div>
+
+<h2 style="margin-bottom: 30px; font-weight: 400; font-size: 24px;">Удалить ученика</h2>
+
+<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 20px; margin-bottom: 30px;">
+    <p style="margin: 0; color: #856404;">
+        Вы уверены, что хотите удалить ученика <strong>{{ student }}</strong>?
+    </p>
+    <p style="margin: 10px 0 0 0; color: #856404; font-size: 14px;">
+        Это действие нельзя отменить. Все связанные занятия, посещаемость и оплаты также будут удалены.
+    </p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+        <button type="submit" class="btn btn-danger">Да, удалить</button>
+        <a href="{% url 'student_detail' student.pk %}" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}
+

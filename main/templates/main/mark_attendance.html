@@ -1,0 +1,37 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Отметить посещаемость{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <a href="{% url 'lesson_detail' lesson.pk %}" class="btn btn-secondary">← Назад к занятию</a>
+</div>
+
+<h2 style="margin-bottom: 10px; font-weight: 400; font-size: 24px;">Отметить посещаемость</h2>
+<p style="color: #666; margin-bottom: 30px;">
+    Ученик: <strong>{{ student }}</strong><br>
+    Занятие: <strong>{{ lesson.date|date:"d.m.Y" }} {{ lesson.time|time:"H:i" }}</strong>
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label class="form-label" for="{{ form.status.id_for_label }}">{{ form.status.label }} *</label>
+        {{ form.status }}
+        {{ form.status.errors }}
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+        {{ form.notes }}
+        {{ form.notes.errors }}
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn">Сохранить</button>
+        <a href="{% url 'lesson_detail' lesson.pk %}" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}
+

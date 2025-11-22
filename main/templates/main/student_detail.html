@@ -1,0 +1,161 @@
+{% extends 'main/base.html' %}
+
+{% block title %}{{ student.last_name }} {{ student.first_name }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <a href="{% url 'student_list' %}" class="btn btn-secondary">← Назад к списку</a>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h2 style="font-weight: 400; font-size: 24px; margin: 0;">
+        {{ student.last_name }} {{ student.first_name }}
+    </h2>
+    <div style="display: flex; gap: 10px;">
+        <a href="{% url 'student_edit' student.pk %}" class="btn">Редактировать</a>
+        <a href="{% url 'student_delete' student.pk %}" class="btn btn-danger">Удалить</a>
+    </div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Имя</div>
+    <div class="detail-value">{{ student.first_name }}</div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Фамилия</div>
+    <div class="detail-value">{{ student.last_name }}</div>
+</div>
+
+{% if student.phone %}
+<div class="detail-item">
+    <div class="detail-label">Телефон</div>
+    <div class="detail-value"><a href="tel:{{ student.phone }}">{{ student.phone }}</a></div>
+</div>
+{% endif %}
+
+{% if student.telegram %}
+<div class="detail-item">
+    <div class="detail-label">Телеграм</div>
+    <div class="detail-value">{{ student.telegram }}</div>
+</div>
+{% endif %}
+
+{% if student.grade %}
+<div class="detail-item">
+    <div class="detail-label">Класс</div>
+    <div class="detail-value">{{ student.grade }}</div>
+</div>
+{% endif %}
+
+{% if student.notes %}
+<div class="detail-item">
+    <div class="detail-label">Заметки</div>
+    <div class="detail-value" style="white-space: pre-wrap;">{{ student.notes }}</div>
+</div>
+{% endif %}
+
+<div class="detail-item">
+    <div class="detail-label">Статус</div>
+    <div class="detail-value">
+        {% if student.is_active %}
+            <span style="color: #28a745;">Активен</span>
+        {% else %}
+            <span style="color: #dc3545;">Неактивен</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Дата создания</div>
+    <div class="detail-value">{{ student.created_at|date:"d.m.Y H:i" }}</div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Последнее обновление</div>
+    <div class="detail-value">{{ student.updated_at|date:"d.m.Y H:i" }}</div>
+</div>
+
+<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+    <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Статистика</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+        <div style="padding: 15px; background: #e3f2fd; border-radius: 4px;">
+            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Всего занятий</div>
+            <div style="font-size: 24px; font-weight: 600; color: #1976d2;">{{ total_lessons }}</div>
+        </div>
+        <div style="padding: 15px; background: #e8f5e9; border-radius: 4px;">
+            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Посещено</div>
+            <div style="font-size: 24px; font-weight: 600; color: #388e3c;">{{ present_lessons }}</div>
+        </div>
+        <div style="padding: 15px; background: #ffebee; border-radius: 4px;">
+            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Пропущено</div>
+            <div style="font-size: 24px; font-weight: 600; color: #d32f2f;">{{ absent_lessons }}</div>
+        </div>
+        <div style="padding: 15px; background: #e8f5e9; border-radius: 4px;">
+            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Всего оплачено</div>
+            <div style="font-size: 24px; font-weight: 600; color: #388e3c;">{{ total_paid }} руб.</div>
+        </div>
+        {% if total_debt > 0 %}
+        <div style="padding: 15px; background: #fff3e0; border-radius: 4px;">
+            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Долг</div>
+            <div style="font-size: 24px; font-weight: 600; color: #f57c00;">{{ total_debt }} руб.</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if lessons %}
+<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+    <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Последние занятия</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Время</th>
+                <th>Предмет</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lesson in lessons %}
+            <tr>
+                <td><a href="{% url 'lesson_detail' lesson.pk %}">{{ lesson.date|date:"d.m.Y" }}</a></td>
+                <td>{{ lesson.time|time:"H:i" }}</td>
+                <td>{{ lesson.subject|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if payments %}
+<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+    <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Последние оплаты</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Сумма</th>
+                <th>Занятие</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>{{ payment.payment_date|date:"d.m.Y" }}</td>
+                <td>{{ payment.amount }} руб.</td>
+                <td>
+                    {% if payment.lesson %}
+                        <a href="{% url 'lesson_detail' payment.lesson.pk %}">{{ payment.lesson.date|date:"d.m.Y" }}</a>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,54 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Отметить оплату{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <a href="{% url 'lesson_detail' lesson.pk %}" class="btn btn-secondary">← Назад к занятию</a>
+</div>
+
+<h2 style="margin-bottom: 10px; font-weight: 400; font-size: 24px;">Отметить оплату</h2>
+<p style="color: #666; margin-bottom: 30px;">
+    Ученик: <strong>{{ student }}</strong><br>
+    Занятие: <strong>{{ lesson.date|date:"d.m.Y" }} {{ lesson.time|time:"H:i" }}</strong><br>
+    {% if lesson.lesson_price > 0 %}
+        Стоимость: <strong>{{ lesson.lesson_price }} руб.</strong>
+    {% endif %}
+</p>
+
+{% if not attendance %}
+<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
+    <p style="margin: 0; color: #856404;">
+        ⚠ Внимание: Ученик не отмечен как присутствовавший на занятии.
+    </p>
+</div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label class="form-label" for="{{ form.amount.id_for_label }}">{{ form.amount.label }} *</label>
+        {{ form.amount }}
+        {{ form.amount.errors }}
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label" for="{{ form.payment_date.id_for_label }}">{{ form.payment_date.label }} *</label>
+        {{ form.payment_date }}
+        {{ form.payment_date.errors }}
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+        {{ form.notes }}
+        {{ form.notes.errors }}
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn">Сохранить</button>
+        <a href="{% url 'lesson_detail' lesson.pk %}" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}
+

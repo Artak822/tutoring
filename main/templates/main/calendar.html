@@ -1,0 +1,158 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Календарь - {{ month_name }} {{ year }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .calendar-nav {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .calendar-title {
+        font-size: 24px;
+        font-weight: 400;
+    }
+    
+    .calendar-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .calendar-table th {
+        padding: 12px;
+        text-align: center;
+        background: #f9f9f9;
+        font-weight: 500;
+        font-size: 12px;
+        text-transform: uppercase;
+        color: #666;
+    }
+    
+    .calendar-table td {
+        width: 14.28%;
+        height: 100px;
+        vertical-align: top;
+        padding: 8px;
+        border: 1px solid #e0e0e0;
+        background: #fff;
+    }
+    
+    .calendar-table td.empty {
+        background: #f9f9f9;
+    }
+    
+    .calendar-table td.today {
+        background: #e3f2fd;
+    }
+    
+    .day-number {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #222;
+    }
+    
+    .day-number.today {
+        color: #0066cc;
+        font-weight: 600;
+    }
+    
+    .lesson-item {
+        font-size: 11px;
+        padding: 3px 5px;
+        margin-bottom: 3px;
+        background: #0066cc;
+        color: #fff;
+        border-radius: 3px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .lesson-item a {
+        color: #fff;
+        text-decoration: none;
+    }
+    
+    .lesson-item a:hover {
+        text-decoration: underline;
+    }
+    
+    .lesson-count {
+        font-size: 11px;
+        color: #666;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calendar-header">
+    <div class="calendar-nav">
+        <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn" style="background: #666;">←</a>
+        <h2 class="calendar-title">{{ month_name }} {{ year }}</h2>
+        <a href="?year={{ next_year }}&month={{ next_month }}" class="btn" style="background: #666;">→</a>
+    </div>
+    <a href="{% url 'lesson_list' %}" class="btn">Все занятия</a>
+</div>
+
+<table class="calendar-table">
+    <thead>
+        <tr>
+            <th>Пн</th>
+            <th>Вт</th>
+            <th>Ср</th>
+            <th>Чт</th>
+            <th>Пт</th>
+            <th>Сб</th>
+            <th>Вс</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for week in weeks %}
+        <tr>
+            {% for day in week %}
+            {% if day %}
+                {% if day.date|date:"Y-m-d" == today|date:"Y-m-d" %}
+                <td class="today">
+                {% else %}
+                <td>
+                {% endif %}
+                    <div class="day-number {% if day.date|date:"Y-m-d" == today|date:"Y-m-d" %}today{% endif %}">
+                        {{ day.date.day }}
+                    </div>
+                    {% if day.lessons %}
+                        {% for lesson in day.lessons|slice:":3" %}
+                        <div class="lesson-item">
+                            <a href="{% url 'lesson_detail' lesson.pk %}">
+                                {{ lesson.time|time:"H:i" }} - 
+                                {% for student in lesson.students.all|slice:":2" %}
+                                    {{ student.last_name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                                {% if lesson.students.count > 2 %}...{% endif %}
+                            </a>
+                        </div>
+                        {% endfor %}
+                        {% if day.lessons|length > 3 %}
+                        <div class="lesson-count">+{{ day.lessons|length|add:"-3" }} еще</div>
+                        {% endif %}
+                    {% endif %}
+                </td>
+            {% else %}
+                <td class="empty"></td>
+            {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+

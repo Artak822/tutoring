@@ -1,0 +1,134 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Занятие - {{ lesson.date }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <a href="{% url 'lesson_list' %}" class="btn btn-secondary">← Назад к списку</a>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h2 style="font-weight: 400; font-size: 24px; margin: 0;">
+        Занятие
+    </h2>
+    <div style="display: flex; gap: 10px;">
+        <a href="{% url 'lesson_edit' lesson.pk %}" class="btn">Редактировать</a>
+        <a href="{% url 'lesson_delete' lesson.pk %}" class="btn btn-danger">Удалить</a>
+    </div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Ученики</div>
+    <div class="detail-value">
+        {% for student in lesson.students.all %}
+            <a href="{% url 'student_detail' student.pk %}">{{ student }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Дата</div>
+    <div class="detail-value">{{ lesson.date|date:"d.m.Y" }}</div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Время</div>
+    <div class="detail-value">{{ lesson.time|time:"H:i" }}</div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Длительность</div>
+    <div class="detail-value">{{ lesson.duration }} минут</div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Стоимость занятия (за одного ученика)</div>
+    <div class="detail-value">{{ lesson.lesson_price }} руб.</div>
+</div>
+
+{% if present_count > 0 %}
+<div class="detail-item">
+    <div class="detail-label">Общая стоимость занятия</div>
+    <div class="detail-value">
+        <strong>{{ total_price }} руб.</strong>
+        <span style="font-size: 14px; color: #666;">({{ lesson.lesson_price }} × {{ present_count }} пришедших)</span>
+    </div>
+</div>
+{% endif %}
+
+{% if lesson.subject %}
+<div class="detail-item">
+    <div class="detail-label">Предмет/Тема</div>
+    <div class="detail-value">{{ lesson.subject }}</div>
+</div>
+{% endif %}
+
+{% if lesson.notes %}
+<div class="detail-item">
+    <div class="detail-label">Заметки</div>
+    <div class="detail-value" style="white-space: pre-wrap;">{{ lesson.notes }}</div>
+</div>
+{% endif %}
+
+<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+    <div class="detail-label" style="font-size: 16px; margin-bottom: 20px;">Посещаемость и оплаты</div>
+    <div class="detail-value">
+        {% for data in students_data %}
+            <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 4px; border-left: 4px solid {% if data.has_debt %}#ff9800{% elif data.payment %}#28a745{% else %}#999{% endif %};">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                    <div>
+                        <strong><a href="{% url 'student_detail' data.student.pk %}">{{ data.student }}</a></strong>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="{% url 'mark_attendance' lesson.pk data.student.pk %}" class="btn" style="font-size: 12px; padding: 5px 10px;">
+                            {% if data.attendance %}Изменить{% else %}Отметить{% endif %} посещаемость
+                        </a>
+                        {% if data.attendance and data.attendance.status == 'present' %}
+                            <a href="{% url 'mark_payment' lesson.pk data.student.pk %}" class="btn" style="font-size: 12px; padding: 5px 10px; background: {% if data.payment %}#666{% else %}#28a745{% endif %};">
+                                {% if data.payment %}Изменить{% else %}Отметить{% endif %} оплату
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 8px;">
+                    <strong>Посещаемость:</strong>
+                    {% if data.attendance %}
+                        {% if data.attendance.status == 'present' %}
+                            <span style="color: #28a745;">✓ Присутствовал</span>
+                        {% else %}
+                            <span style="color: #dc3545;">✗ Отсутствовал</span>
+                        {% endif %}
+                        {% if data.attendance.notes %}
+                            <div style="margin-top: 5px; font-size: 13px; color: #666;">{{ data.attendance.notes }}</div>
+                        {% endif %}
+                    {% else %}
+                        <span style="color: #999;">Не отмечено</span>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <strong>Оплата:</strong>
+                    {% if data.payment %}
+                        <span style="color: #28a745;">✓ {{ data.payment.amount }} руб.</span>
+                        <span style="font-size: 13px; color: #666;">({{ data.payment.payment_date|date:"d.m.Y" }})</span>
+                        {% if data.payment.notes %}
+                            <div style="margin-top: 5px; font-size: 13px; color: #666;">{{ data.payment.notes }}</div>
+                        {% endif %}
+                    {% elif data.attendance and data.attendance.status == 'present' and lesson.lesson_price > 0 %}
+                        <span style="color: #ff9800; font-weight: 600;">⚠ Долг: {{ lesson.lesson_price }} руб.</span>
+                    {% else %}
+                        <span style="color: #999;">Не оплачено</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Дата создания</div>
+    <div class="detail-value">{{ lesson.created_at|date:"d.m.Y H:i" }}</div>
+</div>
+{% endblock %}
+
