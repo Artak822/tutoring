@@ -4,23 +4,26 @@
 
 {% block extra_css %}
 <style>
-    .form-select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
+    /* Дополнительные стили для множественного выбора учеников */
+    select[multiple].form-select {
+        min-height: 150px;
+        padding: 8px;
+    }
+    
+    select[multiple].form-select option {
+        padding: 8px 10px;
+        margin: 2px 0;
         border-radius: 4px;
-        font-size: 14px;
-        font-family: inherit;
-        background: #fff;
     }
     
-    .form-select:focus {
-        outline: none;
-        border-color: #0066cc;
+    select[multiple].form-select option:checked {
+        background: var(--btn-primary) !important;
+        color: #fff !important;
+        font-weight: 600;
     }
     
-    .form-select option {
-        padding: 5px;
+    select[multiple].form-select option:hover {
+        background: var(--bg-primary);
     }
 </style>
 {% endblock %}
@@ -39,7 +42,7 @@
         <label class="form-label" for="{{ form.students.id_for_label }}">{{ form.students.label }} *</label>
         {{ form.students }}
         {{ form.students.errors }}
-        <div style="margin-top: 5px; font-size: 12px; color: #666;">
+        <div style="margin-top: 5px; font-size: 12px; color: var(--text-secondary);">
             Удерживайте Ctrl (Cmd на Mac) для выбора нескольких учеников
         </div>
     </div>
@@ -66,7 +69,7 @@
         <label class="form-label" for="{{ form.lesson_price.id_for_label }}">{{ form.lesson_price.label }} *</label>
         {{ form.lesson_price }}
         {{ form.lesson_price.errors }}
-        <div style="margin-top: 5px; font-size: 12px; color: #666;">
+        <div style="margin-top: 5px; font-size: 12px; color: var(--text-secondary);">
             Стоимость за одного ученика. Общая стоимость = стоимость × количество пришедших учеников.
         </div>
     </div>

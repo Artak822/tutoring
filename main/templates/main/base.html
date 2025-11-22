@@ -15,6 +15,7 @@
         :root {
             --bg-primary: #f5f5f5;
             --bg-secondary: #fff;
+            --bg-tertiary: #f9f9f9;
             --text-primary: #333;
             --text-secondary: #666;
             --text-muted: #999;
@@ -33,12 +34,33 @@
             --message-error-bg: #f8d7da;
             --message-error-text: #721c24;
             --message-error-border: #f5c6cb;
+            --message-warning-bg: #fff3cd;
+            --message-warning-text: #856404;
+            --message-warning-border: #ffc107;
             --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 6px rgba(0,0,0,0.1);
+            /* Статистика цвета */
+            --stat-blue-bg: #e3f2fd;
+            --stat-blue-text: #1976d2;
+            --stat-green-bg: #e8f5e9;
+            --stat-green-text: #388e3c;
+            --stat-orange-bg: #fff3e0;
+            --stat-orange-text: #f57c00;
+            --stat-pink-bg: #fce4ec;
+            --stat-pink-text: #c2185b;
+            --stat-red-bg: #ffebee;
+            --stat-red-text: #d32f2f;
+            /* Статусы */
+            --status-success: #28a745;
+            --status-error: #dc3545;
+            --status-warning: #ff9800;
+            --status-info: #0066cc;
         }
         
         [data-theme="dark"] {
             --bg-primary: #1a1a1a;
             --bg-secondary: #2d2d2d;
+            --bg-tertiary: #252525;
             --text-primary: #e0e0e0;
             --text-secondary: #b0b0b0;
             --text-muted: #808080;
@@ -57,7 +79,27 @@
             --message-error-bg: #4a1e1e;
             --message-error-text: #ff9999;
             --message-error-border: #5a2d2d;
+            --message-warning-bg: #4a3a1e;
+            --message-warning-text: #ffd54f;
+            --message-warning-border: #6b5a2f;
             --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 6px rgba(0,0,0,0.4);
+            /* Статистика цвета для темной темы */
+            --stat-blue-bg: #1a3a4a;
+            --stat-blue-text: #64b5f6;
+            --stat-green-bg: #1a3a2a;
+            --stat-green-text: #81c784;
+            --stat-orange-bg: #4a3a1e;
+            --stat-orange-text: #ffb74d;
+            --stat-pink-bg: #4a1a3a;
+            --stat-pink-text: #f48fb1;
+            --stat-red-bg: #4a1a1a;
+            --stat-red-text: #ef5350;
+            /* Статусы для темной темы */
+            --status-success: #66bb6a;
+            --status-error: #ef5350;
+            --status-warning: #ffa726;
+            --status-info: #42a5f5;
         }
         
         * {
@@ -233,7 +275,9 @@
         }
         
         .form-input,
-        .form-textarea {
+        .form-textarea,
+        .form-select,
+        select {
             width: 100%;
             padding: 10px;
             border: 1px solid var(--border-color);
@@ -246,9 +290,39 @@
         }
         
         .form-input:focus,
-        .form-textarea:focus {
+        .form-textarea:focus,
+        .form-select:focus,
+        select:focus {
             outline: none;
             border-color: var(--link-color);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        [data-theme="dark"] .form-input:focus,
+        [data-theme="dark"] .form-textarea:focus,
+        [data-theme="dark"] .form-select:focus,
+        [data-theme="dark"] select:focus {
+            box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.2);
+        }
+        
+        select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 8px;
+        }
+        
+        select[multiple] option:checked {
+            background: var(--btn-primary);
+            color: #fff;
+        }
+        
+        select[multiple] option:hover {
+            background: var(--bg-primary);
+        }
+        
+        .form-select,
+        select {
+            cursor: pointer;
         }
         
         .form-textarea {
@@ -510,6 +584,159 @@
             nav a {
                 min-height: 36px;
             }
+        }
+        
+        /* Статистика карточки */
+        .stat-card {
+            padding: 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-card-blue {
+            background: var(--stat-blue-bg);
+            color: var(--stat-blue-text);
+        }
+        
+        .stat-card-green {
+            background: var(--stat-green-bg);
+            color: var(--stat-green-text);
+        }
+        
+        .stat-card-orange {
+            background: var(--stat-orange-bg);
+            color: var(--stat-orange-text);
+        }
+        
+        .stat-card-pink {
+            background: var(--stat-pink-bg);
+            color: var(--stat-pink-text);
+        }
+        
+        .stat-card-red {
+            background: var(--stat-red-bg);
+            color: var(--stat-red-text);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            opacity: 0.9;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        
+        /* Статусы */
+        .status-success {
+            color: var(--status-success);
+        }
+        
+        .status-error {
+            color: var(--status-error);
+        }
+        
+        .status-warning {
+            color: var(--status-warning);
+        }
+        
+        .status-info {
+            color: var(--status-info);
+        }
+        
+        /* Предупреждения */
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid;
+        }
+        
+        .alert-warning {
+            background: var(--message-warning-bg);
+            color: var(--message-warning-text);
+            border-color: var(--message-warning-border);
+        }
+        
+        /* Студенческие карточки */
+        .student-card {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            border-left: 5px solid;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+        
+        .student-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateX(4px);
+        }
+        
+        .student-card-debt {
+            border-left-color: var(--status-warning);
+            background: var(--stat-orange-bg);
+        }
+        
+        .student-card-paid {
+            border-left-color: var(--status-success);
+            background: var(--stat-green-bg);
+        }
+        
+        .student-card-default {
+            border-left-color: var(--text-muted);
+        }
+        
+        /* Улучшенные кнопки */
+        .btn {
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            box-shadow: var(--shadow);
+        }
+        
+        .btn:hover {
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Улучшенные формы */
+        .form-input:focus,
+        .form-textarea:focus {
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        [data-theme="dark"] .form-input:focus,
+        [data-theme="dark"] .form-textarea:focus {
+            box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.2);
+        }
+        
+        /* Улучшенные таблицы */
+        table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background: var(--bg-tertiary);
         }
     </style>
     {% block extra_css %}{% endblock %}

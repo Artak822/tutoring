@@ -59,9 +59,9 @@
     <div class="detail-label">Статус</div>
     <div class="detail-value">
         {% if student.is_active %}
-            <span style="color: #28a745;">Активен</span>
+            <span class="status-success">Активен</span>
         {% else %}
-            <span style="color: #dc3545;">Неактивен</span>
+            <span class="status-error">Неактивен</span>
         {% endif %}
     </div>
 </div>
@@ -76,36 +76,36 @@
     <div class="detail-value">{{ student.updated_at|date:"d.m.Y H:i" }}</div>
 </div>
 
-<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--border-color);">
     <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Статистика</div>
     <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-        <div style="padding: 15px; background: #e3f2fd; border-radius: 4px;">
-            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Всего занятий</div>
-            <div style="font-size: 24px; font-weight: 600; color: #1976d2;">{{ total_lessons }}</div>
+        <div class="stat-card stat-card-blue">
+            <div class="stat-label" style="font-size: 12px;">Всего занятий</div>
+            <div class="stat-value" style="font-size: 24px;">{{ total_lessons }}</div>
         </div>
-        <div style="padding: 15px; background: #e8f5e9; border-radius: 4px;">
-            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Посещено</div>
-            <div style="font-size: 24px; font-weight: 600; color: #388e3c;">{{ present_lessons }}</div>
+        <div class="stat-card stat-card-green">
+            <div class="stat-label" style="font-size: 12px;">Посещено</div>
+            <div class="stat-value" style="font-size: 24px;">{{ present_lessons }}</div>
         </div>
-        <div style="padding: 15px; background: #ffebee; border-radius: 4px;">
-            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Пропущено</div>
-            <div style="font-size: 24px; font-weight: 600; color: #d32f2f;">{{ absent_lessons }}</div>
+        <div class="stat-card stat-card-red">
+            <div class="stat-label" style="font-size: 12px;">Пропущено</div>
+            <div class="stat-value" style="font-size: 24px;">{{ absent_lessons }}</div>
         </div>
-        <div style="padding: 15px; background: #e8f5e9; border-radius: 4px;">
-            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Всего оплачено</div>
-            <div style="font-size: 24px; font-weight: 600; color: #388e3c;">{{ total_paid }} руб.</div>
+        <div class="stat-card stat-card-green">
+            <div class="stat-label" style="font-size: 12px;">Всего оплачено</div>
+            <div class="stat-value" style="font-size: 24px;">{{ total_paid }} руб.</div>
         </div>
         {% if total_debt > 0 %}
-        <div style="padding: 15px; background: #fff3e0; border-radius: 4px;">
-            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Долг</div>
-            <div style="font-size: 24px; font-weight: 600; color: #f57c00;">{{ total_debt }} руб.</div>
+        <div class="stat-card stat-card-orange">
+            <div class="stat-label" style="font-size: 12px;">Долг</div>
+            <div class="stat-value" style="font-size: 24px;">{{ total_debt }} руб.</div>
         </div>
         {% endif %}
     </div>
 </div>
 
 {% if lessons %}
-<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--border-color);">
     <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Последние занятия</div>
     <table>
         <thead>
@@ -129,7 +129,7 @@
 {% endif %}
 
 {% if payments %}
-<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--border-color);">
     <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Последние оплаты</div>
     <table>
         <thead>

@@ -51,7 +51,7 @@
     <div class="detail-label">Общая стоимость занятия</div>
     <div class="detail-value">
         <strong>{{ total_price }} руб.</strong>
-        <span style="font-size: 14px; color: #666;">({{ lesson.lesson_price }} × {{ present_count }} пришедших)</span>
+        <span style="font-size: 14px; color: var(--text-secondary);">({{ lesson.lesson_price }} × {{ present_count }} пришедших)</span>
     </div>
 </div>
 {% endif %}
@@ -70,11 +70,11 @@
 </div>
 {% endif %}
 
-<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--border-color);">
     <div class="detail-label" style="font-size: 16px; margin-bottom: 20px;">Посещаемость и оплаты</div>
     <div class="detail-value">
         {% for data in students_data %}
-            <div class="student-card" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 4px; border-left: 4px solid {% if data.has_debt %}#ff9800{% elif data.payment %}#28a745{% else %}#999{% endif %};">
+            <div class="student-card {% if data.has_debt %}student-card-debt{% elif data.payment %}student-card-paid{% else %}student-card-default{% endif %}">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
                     <div>
                         <strong><a href="{% url 'student_detail' data.student.pk %}">{{ data.student }}</a></strong>
@@ -95,31 +95,31 @@
                     <strong>Посещаемость:</strong>
                     {% if data.attendance %}
                         {% if data.attendance.status == 'present' %}
-                            <span style="color: #28a745;">✓ Присутствовал</span>
+                            <span class="status-success">✓ Присутствовал</span>
                         {% else %}
-                            <span style="color: #dc3545;">✗ Отсутствовал</span>
+                            <span class="status-error">✗ Отсутствовал</span>
                         {% endif %}
                         {% if data.attendance.notes %}
-                            <div style="margin-top: 5px; font-size: 13px; color: #666;">{{ data.attendance.notes }}</div>
+                            <div style="margin-top: 5px; font-size: 13px; color: var(--text-secondary);">{{ data.attendance.notes }}</div>
                         {% endif %}
                     {% else %}
-                        <span style="color: #999;">Не отмечено</span>
+                        <span style="color: var(--text-muted);">Не отмечено</span>
                     {% endif %}
                 </div>
                 
                 <div>
                     <strong>Оплата:</strong>
                     {% if data.payment %}
-                        <span style="color: #28a745;">✓ {{ data.payment.amount }} руб.</span>
-                        <span style="font-size: 13px; color: #666;">({{ data.payment.payment_date|date:"d.m.Y" }})</span>
-                        <span style="font-size: 13px; color: #666; margin-left: 5px;">— {{ data.payment.get_payment_method_display }}</span>
+                        <span class="status-success">✓ {{ data.payment.amount }} руб.</span>
+                        <span style="font-size: 13px; color: var(--text-secondary);">({{ data.payment.payment_date|date:"d.m.Y" }})</span>
+                        <span style="font-size: 13px; color: var(--text-secondary); margin-left: 5px;">— {{ data.payment.get_payment_method_display }}</span>
                         {% if data.payment.notes %}
-                            <div style="margin-top: 5px; font-size: 13px; color: #666;">{{ data.payment.notes }}</div>
+                            <div style="margin-top: 5px; font-size: 13px; color: var(--text-secondary);">{{ data.payment.notes }}</div>
                         {% endif %}
                     {% elif data.attendance and data.attendance.status == 'present' and lesson.lesson_price > 0 %}
-                        <span style="color: #ff9800; font-weight: 600;">⚠ Долг: {{ lesson.lesson_price }} руб.</span>
+                        <span class="status-warning" style="font-weight: 600;">⚠ Долг: {{ lesson.lesson_price }} руб.</span>
                     {% else %}
-                        <span style="color: #999;">Не оплачено</span>
+                        <span style="color: var(--text-muted);">Не оплачено</span>
                     {% endif %}
                 </div>
             </div>

@@ -8,7 +8,7 @@
 </div>
 
 <h2 style="margin-bottom: 10px; font-weight: 400; font-size: 24px;">Отметить оплату</h2>
-<p style="color: #666; margin-bottom: 30px;">
+<p style="color: var(--text-secondary); margin-bottom: 30px;">
     Ученик: <strong>{{ student }}</strong><br>
     Занятие: <strong>{{ lesson.date|date:"d.m.Y" }} {{ lesson.time|time:"H:i" }}</strong><br>
     {% if lesson.lesson_price > 0 %}
@@ -17,8 +17,8 @@
 </p>
 
 {% if not attendance %}
-<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
-    <p style="margin: 0; color: #856404;">
+<div class="alert alert-warning">
+    <p style="margin: 0;">
         ⚠ Внимание: Ученик не отмечен как присутствовавший на занятии.
     </p>
 </div>

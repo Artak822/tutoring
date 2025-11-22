@@ -7,7 +7,7 @@
     <h2 style="font-weight: 400; font-size: 20px; margin: 0;">Список занятий</h2>
     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <a href="{% url 'lesson_create' %}" class="btn">+ Создать занятие</a>
-        <a href="{% url 'calendar' %}" class="btn" style="background: #666;">Календарь</a>
+        <a href="{% url 'calendar' %}" class="btn btn-secondary">Календарь</a>
     </div>
 </div>
 
@@ -42,14 +42,14 @@
                                 <div style="font-size: 12px;">
                                     {{ attendance.student.first_name }}: 
                                     {% if attendance.status == 'present' %}
-                                        <span style="color: #28a745;">✓</span>
+                                        <span class="status-success">✓</span>
                                     {% else %}
-                                        <span style="color: #dc3545;">✗</span>
+                                        <span class="status-error">✗</span>
                                     {% endif %}
                                 </div>
                             {% endfor %}
                         {% else %}
-                            <span style="color: #999;">Не отмечено</span>
+                            <span style="color: var(--text-muted);">Не отмечено</span>
                         {% endif %}
                     {% endwith %}
                 </td>
@@ -59,11 +59,11 @@
                             {% for payment in payments %}
                                 <div style="font-size: 12px;">
                                     {{ payment.student.first_name }}: 
-                                    <span style="color: #28a745;">{{ payment.amount }} руб.</span>
+                                    <span class="status-success">{{ payment.amount }} руб.</span>
                                 </div>
                             {% endfor %}
                         {% else %}
-                            <span style="color: #999;">Не оплачено</span>
+                            <span style="color: var(--text-muted);">Не оплачено</span>
                         {% endif %}
                     {% endwith %}
                 </td>

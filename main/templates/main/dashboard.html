@@ -30,41 +30,41 @@
 </h2>
 
 <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px;">
-    <div style="padding: 20px; background: #e3f2fd; border-radius: 4px;">
-        <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Учеников</div>
-        <div style="font-size: 32px; font-weight: 600; color: #1976d2;">{{ students_count }}</div>
+    <div class="stat-card stat-card-blue">
+        <div class="stat-label">Учеников</div>
+        <div class="stat-value">{{ students_count }}</div>
     </div>
     
-    <div style="padding: 20px; background: #e8f5e9; border-radius: 4px;">
-        <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Прибыль (все время)</div>
-        <div style="font-size: 32px; font-weight: 600; color: #388e3c;">{{ profit_all_time }} руб.</div>
+    <div class="stat-card stat-card-green">
+        <div class="stat-label">Прибыль (все время)</div>
+        <div class="stat-value">{{ profit_all_time }} руб.</div>
     </div>
     
-    <div style="padding: 20px; background: #fff3e0; border-radius: 4px;">
-        <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Прибыль (месяц)</div>
-        <div style="font-size: 32px; font-weight: 600; color: #f57c00;">{{ profit_month }} руб.</div>
+    <div class="stat-card stat-card-orange">
+        <div class="stat-label">Прибыль (месяц)</div>
+        <div class="stat-value">{{ profit_month }} руб.</div>
     </div>
     
-    <div style="padding: 20px; background: #fce4ec; border-radius: 4px;">
-        <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Прибыль (неделя)</div>
-        <div style="font-size: 32px; font-weight: 600; color: #c2185b;">{{ profit_week }} руб.</div>
+    <div class="stat-card stat-card-pink">
+        <div class="stat-label">Прибыль (неделя)</div>
+        <div class="stat-value">{{ profit_week }} руб.</div>
     </div>
 </div>
 
 <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px;">
-    <div style="padding: 20px; background: #e3f2fd; border-radius: 4px;">
-        <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Занятий (все время)</div>
-        <div style="font-size: 32px; font-weight: 600; color: #1976d2;">{{ lessons_all_time }}</div>
+    <div class="stat-card stat-card-blue">
+        <div class="stat-label">Занятий (все время)</div>
+        <div class="stat-value">{{ lessons_all_time }}</div>
     </div>
     
-    <div style="padding: 20px; background: #fff3e0; border-radius: 4px;">
-        <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Занятий (месяц)</div>
-        <div style="font-size: 32px; font-weight: 600; color: #f57c00;">{{ lessons_month }}</div>
+    <div class="stat-card stat-card-orange">
+        <div class="stat-label">Занятий (месяц)</div>
+        <div class="stat-value">{{ lessons_month }}</div>
     </div>
     
-    <div style="padding: 20px; background: #fce4ec; border-radius: 4px;">
-        <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Занятий (неделя)</div>
-        <div style="font-size: 32px; font-weight: 600; color: #c2185b;">{{ lessons_week }}</div>
+    <div class="stat-card stat-card-pink">
+        <div class="stat-label">Занятий (неделя)</div>
+        <div class="stat-value">{{ lessons_week }}</div>
     </div>
 </div>
 
@@ -96,7 +96,7 @@
                 </tbody>
             </table>
         {% else %}
-            <p style="color: #999;">Нет занятий</p>
+            <p style="color: var(--text-muted);">Нет занятий</p>
         {% endif %}
         <div style="margin-top: 15px;">
             <a href="{% url 'lesson_list' %}" class="btn">Все занятия</a>
@@ -125,7 +125,7 @@
                 </tbody>
             </table>
         {% else %}
-            <p style="color: #999;">Нет учеников</p>
+            <p style="color: var(--text-muted);">Нет учеников</p>
         {% endif %}
         <div style="margin-top: 15px;">
             <a href="{% url 'student_list' %}" class="btn">Все ученики</a>
