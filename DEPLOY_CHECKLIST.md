@@ -13,6 +13,8 @@
 
 - [ ] **ALLOWED_HOSTS** - ваш домен (например: `yourdomain.com,www.yourdomain.com`)
 
+- [ ] **CSRF_TRUSTED_ORIGINS** - ваш домен с https:// (например: `https://your-app.railway.app`)
+
 ### 2. Проверьте файлы:
 
 - [ ] `requirements.txt` содержит все зависимости

@@ -55,6 +55,18 @@ else:
         # В продакшене без ALLOWED_HOSTS приложение не запустится
         ALLOWED_HOSTS = []
 
+# CSRF_TRUSTED_ORIGINS - домены с протоколом (https://), с которых разрешены CSRF-запросы
+CSRF_TRUSTED_ORIGINS_STR = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if CSRF_TRUSTED_ORIGINS_STR:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in CSRF_TRUSTED_ORIGINS_STR.split(',') if origin.strip()]
+else:
+    # Для локальной разработки
+    if DEBUG:
+        CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
+    else:
+        # В продакшене нужно указать домен с https://
+        CSRF_TRUSTED_ORIGINS = []
+
 
 # Application definition
 
@@ -102,12 +114,36 @@ WSGI_APPLICATION = 'tutoring.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Поддержка PostgreSQL через DATABASE_URL (Railway, Render и др. предоставляют это автоматически)
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL:
+    # Используем PostgreSQL для продакшена
+    try:
+        import dj_database_url  # type: ignore
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=DATABASE_URL,
+                conn_max_age=600,
+                conn_health_checks=True,
+            )
+        }
+    except ImportError:
+        # Если dj-database-url не установлен, используем SQLite
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+else:
+    # SQLite для локальной разработки
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 
 # Password validation
@@ -149,20 +185,21 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Security settings for production
 if not DEBUG:
-    # HTTPS настройки (раскомментируйте если ваша платформа поддерживает HTTPS)
-    # SECURE_SSL_REDIRECT = True
-    # SESSION_COOKIE_SECURE = True
-    # CSRF_COOKIE_SECURE = True
+    # HTTPS настройки для Railway и других платформ с HTTPS
+    # Railway автоматически предоставляет HTTPS, поэтому включаем эти настройки
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
+    SESSION_COOKIE_SECURE = True  # Cookies только через HTTPS
+    CSRF_COOKIE_SECURE = True  # CSRF cookies только через HTTPS
     
     # Безопасность заголовков (всегда включены)
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
     
-    # HSTS (раскомментируйте если используете HTTPS)
-    # SECURE_HSTS_SECONDS = 31536000
-    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    # SECURE_HSTS_PRELOAD = True
+    # HSTS (HTTP Strict Transport Security) - защита от downgrade атак
+    SECURE_HSTS_SECONDS = 31536000  # 1 год
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

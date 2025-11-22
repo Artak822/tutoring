@@ -22,6 +22,18 @@
    - Укажите ваш домен через запятую (без пробелов)
    - Пример: `ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com,your-app.railway.app`
 
+4. **CSRF_TRUSTED_ORIGINS** - домены с протоколом для CSRF-запросов
+   - Укажите домен с протоколом `https://` (для продакшена)
+   - Пример для Railway: `CSRF_TRUSTED_ORIGINS=https://your-app.railway.app`
+   - Пример для Render: `CSRF_TRUSTED_ORIGINS=https://your-app.onrender.com`
+   - Если несколько доменов: `CSRF_TRUSTED_ORIGINS=https://domain1.com,https://www.domain1.com`
+
+### Автоматические переменные (не требуют ручной настройки):
+
+5. **DATABASE_URL** - автоматически устанавливается Railway/Render при добавлении PostgreSQL
+   - **Не нужно** устанавливать вручную!
+   - Railway и Render автоматически создают эту переменную при добавлении PostgreSQL сервиса
+
 ### Для локальной разработки (опционально):
 
 Создайте файл `.env` в корне проекта:
@@ -30,6 +42,7 @@
 SECRET_KEY=ваш-секретный-ключ-для-разработки
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
 ```
 
 **Важно:** Файл `.env` уже добавлен в `.gitignore` и не будет загружен в репозиторий.
@@ -62,6 +75,7 @@ heroku config:set ALLOWED_HOSTS=ваш-домен.herokuapp.com
 1. ✅ SECRET_KEY установлен и отличается от дефолтного
 2. ✅ DEBUG=False для продакшена
 3. ✅ ALLOWED_HOSTS содержит ваш домен
-4. ✅ Статические файлы собраны (`python manage.py collectstatic`)
-5. ✅ Миграции выполнены (`python manage.py migrate`)
+4. ✅ CSRF_TRUSTED_ORIGINS содержит ваш домен с https://
+5. ✅ Статические файлы собраны (`python manage.py collectstatic`)
+6. ✅ Миграции выполнены (`python manage.py migrate`)
 
