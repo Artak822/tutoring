@@ -139,7 +139,7 @@ class LessonForm(forms.ModelForm):
                 'class': 'form-input',
                 'min': '0',
                 'step': '0.01',
-                'placeholder': '0.00'
+                'placeholder': '500'
             }),
             'subject': forms.TextInput(attrs={
                 'class': 'form-input',
