@@ -199,7 +199,7 @@ class PaymentForm(forms.ModelForm):
     
     class Meta:
         model = Payment
-        fields = ['amount', 'payment_date', 'notes']
+        fields = ['amount', 'payment_date', 'payment_method', 'notes']
         widgets = {
             'amount': forms.NumberInput(attrs={
                 'class': 'form-input',
@@ -211,15 +211,19 @@ class PaymentForm(forms.ModelForm):
                 'class': 'form-input',
                 'type': 'date'
             }),
+            'payment_method': forms.Select(attrs={
+                'class': 'form-input',
+            }),
             'notes': forms.Textarea(attrs={
                 'class': 'form-textarea',
                 'rows': 3,
-                'placeholder': 'Дополнительные заметки'
+                'placeholder': 'Дополнительные заметки (например: оплатили картой)'
             }),
         }
         labels = {
             'amount': 'Сумма',
             'payment_date': 'Дата оплаты',
+            'payment_method': 'Способ оплаты',
             'notes': 'Заметки',
         }
     

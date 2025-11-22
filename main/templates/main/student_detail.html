@@ -136,6 +136,7 @@
             <tr>
                 <th>Дата</th>
                 <th>Сумма</th>
+                <th>Способ оплаты</th>
                 <th>Занятие</th>
             </tr>
         </thead>
@@ -144,6 +145,7 @@
             <tr>
                 <td>{{ payment.payment_date|date:"d.m.Y" }}</td>
                 <td>{{ payment.amount }} руб.</td>
+                <td>{{ payment.get_payment_method_display }}</td>
                 <td>
                     {% if payment.lesson %}
                         <a href="{% url 'lesson_detail' payment.lesson.pk %}">{{ payment.lesson.date|date:"d.m.Y" }}</a>

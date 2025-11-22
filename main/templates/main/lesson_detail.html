@@ -112,6 +112,7 @@
                     {% if data.payment %}
                         <span style="color: #28a745;">✓ {{ data.payment.amount }} руб.</span>
                         <span style="font-size: 13px; color: #666;">({{ data.payment.payment_date|date:"d.m.Y" }})</span>
+                        <span style="font-size: 13px; color: #666; margin-left: 5px;">— {{ data.payment.get_payment_method_display }}</span>
                         {% if data.payment.notes %}
                             <div style="margin-top: 5px; font-size: 13px; color: #666;">{{ data.payment.notes }}</div>
                         {% endif %}

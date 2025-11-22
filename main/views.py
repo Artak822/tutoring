@@ -394,18 +394,28 @@ def mark_payment(request, lesson_pk, student_pk):
     if not attendance:
         messages.warning(request, 'Ученик не присутствовал на занятии.')
     
+    # Проверяем, есть ли уже оплата (до обработки POST, чтобы обновить существующую)
+    existing_payment = Payment.objects.filter(lesson=lesson, student=student).first()
+    
     if request.method == 'POST':
-        form = PaymentForm(request.POST, lesson=lesson, student=student)
+        # Если есть существующая оплата, передаем instance для обновления
+        if existing_payment:
+            form = PaymentForm(request.POST, instance=existing_payment, lesson=lesson, student=student)
+        else:
+            form = PaymentForm(request.POST, lesson=lesson, student=student)
+        
         if form.is_valid():
             payment = form.save(commit=False)
             payment.student = student
             payment.lesson = lesson
             payment.save()
-            messages.success(request, f'Оплата для {student} отмечена.')
+            if existing_payment:
+                messages.success(request, f'Оплата для {student} обновлена.')
+            else:
+                messages.success(request, f'Оплата для {student} отмечена.')
             return redirect('lesson_detail', pk=lesson_pk)
     else:
         # Проверяем, есть ли уже оплата
-        existing_payment = Payment.objects.filter(lesson=lesson, student=student).first()
         if existing_payment:
             form = PaymentForm(instance=existing_payment, lesson=lesson, student=student)
         else:

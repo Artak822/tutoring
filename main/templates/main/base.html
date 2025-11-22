@@ -4,7 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Система отслеживания учеников{% endblock %}</title>
+    <script>
+        // Устанавливаем тему ДО загрузки страницы, чтобы избежать мерцания
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     <style>
+        :root {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #fff;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-muted: #999;
+            --border-color: #e0e0e0;
+            --link-color: #0066cc;
+            --link-hover: #0052a3;
+            --btn-primary: #0066cc;
+            --btn-primary-hover: #0052a3;
+            --btn-danger: #dc3545;
+            --btn-danger-hover: #c82333;
+            --btn-secondary: #666;
+            --btn-secondary-hover: #555;
+            --message-success-bg: #d4edda;
+            --message-success-text: #155724;
+            --message-success-border: #c3e6cb;
+            --message-error-bg: #f8d7da;
+            --message-error-text: #721c24;
+            --message-error-border: #f5c6cb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-muted: #808080;
+            --border-color: #404040;
+            --link-color: #4da6ff;
+            --link-hover: #66b3ff;
+            --btn-primary: #4da6ff;
+            --btn-primary-hover: #66b3ff;
+            --btn-danger: #ff6b6b;
+            --btn-danger-hover: #ff5252;
+            --btn-secondary: #808080;
+            --btn-secondary-hover: #999999;
+            --message-success-bg: #1e4620;
+            --message-success-text: #90ee90;
+            --message-success-border: #2d5a2f;
+            --message-error-bg: #4a1e1e;
+            --message-error-text: #ff9999;
+            --message-error-border: #5a2d2d;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -14,8 +69,9 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         .container {
@@ -25,60 +81,89 @@
         }
         
         header {
-            background: #fff;
+            background: var(--bg-secondary);
             padding: 20px 0;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--border-color);
             margin-bottom: 30px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         
         header h1 {
             font-size: 24px;
             font-weight: 500;
-            color: #222;
+            color: var(--text-primary);
+        }
+        
+        header h1 a {
+            color: var(--text-primary);
         }
         
        
         
         nav a {
             margin-right: 20px;
-            color: #666;
+            color: var(--text-secondary);
             font-size: 14px;
+            transition: color 0.3s ease;
         }
         
         nav a:hover {
-            color: #0066cc;
+            color: var(--link-color);
+        }
+        
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--border-color);
         }
         
         .content {
-            background: #fff;
+            background: var(--bg-secondary);
             padding: 30px;
             border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
         
         a {
-            color: #0066cc;
+            color: var(--link-color);
             text-decoration: none;
+            transition: color 0.3s ease;
         }
         
         a:hover {
             text-decoration: underline;
+            color: var(--link-hover);
         }
         
         .btn {
             display: inline-block;
             padding: 8px 16px;
-            background: #0066cc;
+            background: var(--btn-primary);
             color: #fff;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             text-decoration: none;
             font-size: 14px;
+            transition: background-color 0.3s ease;
         }
         
         .btn:hover {
-            background: #0052a3;
+            background: var(--btn-primary-hover);
             text-decoration: none;
         }
         
@@ -91,24 +176,26 @@
         th, td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.3s ease;
         }
         
         th {
             font-weight: 500;
-            color: #666;
+            color: var(--text-secondary);
             font-size: 14px;
             text-transform: uppercase;
         }
         
         tr:hover {
-            background: #f9f9f9;
+            background: var(--bg-primary);
         }
         
         .detail-item {
             margin-bottom: 20px;
             padding-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.3s ease;
         }
         
         .detail-item:last-child {
@@ -117,20 +204,20 @@
         
         .detail-label {
             font-size: 12px;
-            color: #666;
+            color: var(--text-secondary);
             text-transform: uppercase;
             margin-bottom: 5px;
         }
         
         .detail-value {
             font-size: 16px;
-            color: #222;
+            color: var(--text-primary);
         }
         
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: #999;
+            color: var(--text-muted);
         }
         
         .form-group {
@@ -141,7 +228,7 @@
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
-            color: #333;
+            color: var(--text-primary);
             font-size: 14px;
         }
         
@@ -149,16 +236,19 @@
         .form-textarea {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 14px;
             font-family: inherit;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
         }
         
         .form-input:focus,
         .form-textarea:focus {
             outline: none;
-            border-color: #0066cc;
+            border-color: var(--link-color);
         }
         
         .form-textarea {
@@ -185,19 +275,19 @@
         }
         
         .btn-danger {
-            background: #dc3545;
+            background: var(--btn-danger);
         }
         
         .btn-danger:hover {
-            background: #c82333;
+            background: var(--btn-danger-hover);
         }
         
         .btn-secondary {
-            background: #666;
+            background: var(--btn-secondary);
         }
         
         .btn-secondary:hover {
-            background: #555;
+            background: var(--btn-secondary-hover);
         }
         
         .messages {
@@ -208,25 +298,26 @@
             padding: 12px 16px;
             border-radius: 4px;
             margin-bottom: 10px;
+            transition: all 0.3s ease;
         }
         
         .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: var(--message-success-bg);
+            color: var(--message-success-text);
+            border: 1px solid var(--message-success-border);
         }
         
         .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: var(--message-error-bg);
+            color: var(--message-error-text);
+            border: 1px solid var(--message-error-border);
         }
         
         .errorlist {
             list-style: none;
             padding: 0;
             margin: 5px 0 0 0;
-            color: #dc3545;
+            color: var(--btn-danger);
             font-size: 13px;
         }
         
@@ -266,7 +357,7 @@
                 margin-right: 0;
                 font-size: 13px;
                 padding: 5px 10px;
-                background: #f5f5f5;
+                background: var(--bg-primary);
                 border-radius: 4px;
             }
             
@@ -427,7 +518,7 @@
     <header>
         <div class="container">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h1><a href="{% url 'dashboard' %}" style="color: #222; text-decoration: none;">Система отслеживания учеников</a></h1>
+                <h1><a href="{% url 'dashboard' %}" style="color: var(--text-primary); text-decoration: none;">Система отслеживания учеников</a></h1>
                 <div style="display: flex; align-items: center; gap: 20px;">
                     {% if user.is_authenticated %}
                         <nav>
@@ -436,11 +527,15 @@
                             <a href="{% url 'calendar' %}">Календарь</a>
                             <a href="{% url 'lesson_list' %}">Занятия</a>
                         </nav>
-                        <div style="font-size: 14px; color: #666;">
+                        <button class="theme-toggle" id="theme-toggle" aria-label="Переключить тему">
+                            <span id="theme-icon">🌙</span>
+                            <span id="theme-text">Темная</span>
+                        </button>
+                        <div style="font-size: 14px; color: var(--text-secondary);">
                             {{ user.get_full_name|default:user.username }}
                             <form method="post" action="{% url 'logout' %}" style="display: inline;">
                                 {% csrf_token %}
-                                <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; text-decoration: underline; padding: 0; margin-left: 10px; font-size: 14px;">Выход</button>
+                                <button type="submit" style="background: none; border: none; color: var(--btn-danger); cursor: pointer; text-decoration: underline; padding: 0; margin-left: 10px; font-size: 14px;">Выход</button>
                             </form>
                         </div>
                     {% else %}
@@ -468,6 +563,48 @@
             {% block content %}{% endblock %}
         </div>
     </div>
+    
+    <script>
+        // Управление темной темой
+        document.addEventListener('DOMContentLoaded', function() {
+            const html = document.documentElement;
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            // Если кнопка переключения темы не найдена (пользователь не авторизован), выходим
+            if (!themeToggle || !themeIcon || !themeText) {
+                return;
+            }
+            
+            // Функция для обновления UI кнопки
+            function updateThemeButton(theme) {
+                if (theme === 'dark') {
+                    themeIcon.textContent = '☀️';
+                    themeText.textContent = 'Светлая';
+                } else {
+                    themeIcon.textContent = '🌙';
+                    themeText.textContent = 'Темная';
+                }
+            }
+            
+            // Получаем текущую тему (уже установлена скриптом в head)
+            const currentTheme = html.getAttribute('data-theme') || 'light';
+            updateThemeButton(currentTheme);
+            
+            // Переключение темы
+            themeToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeButton(newTheme);
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
 

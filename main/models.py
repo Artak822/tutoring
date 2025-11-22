@@ -162,10 +162,16 @@ class Attendance(models.Model):
 
 class Payment(models.Model):
     """Модель оплаты"""
+    PAYMENT_METHOD_CHOICES = [
+        ('cash', 'Наличные'),
+        ('transfer', 'Перевод'),
+    ]
+    
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='payments', verbose_name='Ученик')
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments', verbose_name='Занятие')
     amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))], verbose_name='Сумма')
     payment_date = models.DateField(verbose_name='Дата оплаты')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cash', verbose_name='Способ оплаты')
     notes = models.TextField(blank=True, verbose_name='Заметки')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
