@@ -3,24 +3,25 @@
 {% block title %}Список занятий{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2 style="font-weight: 400; font-size: 20px;">Список занятий</h2>
-    <div style="display: flex; gap: 10px;">
+<div class="page-header">
+    <h2 style="font-weight: 400; font-size: 20px; margin: 0;">Список занятий</h2>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <a href="{% url 'lesson_create' %}" class="btn">+ Создать занятие</a>
         <a href="{% url 'calendar' %}" class="btn" style="background: #666;">Календарь</a>
     </div>
 </div>
 
 {% if lessons %}
+    <div class="table-responsive">
     <table>
         <thead>
             <tr>
                 <th>Дата</th>
                 <th>Время</th>
                 <th>Ученики</th>
-                <th>Предмет</th>
+                <th class="table-mobile-hide">Предмет</th>
                 <th>Посещаемость</th>
-                <th>Оплата</th>
+                <th class="table-mobile-hide">Оплата</th>
             </tr>
         </thead>
         <tbody>
@@ -33,7 +34,7 @@
                         <a href="{% url 'student_detail' student.pk %}">{{ student }}</a>{% if not forloop.last %}, {% endif %}
                     {% endfor %}
                 </td>
-                <td>{{ lesson.subject|default:"—" }}</td>
+                <td class="table-mobile-hide">{{ lesson.subject|default:"—" }}</td>
                 <td>
                     {% with attendances=lesson.attendances.all %}
                         {% if attendances %}
@@ -52,7 +53,7 @@
                         {% endif %}
                     {% endwith %}
                 </td>
-                <td>
+                <td class="table-mobile-hide">
                     {% with payments=lesson.payments.all %}
                         {% if payments %}
                             {% for payment in payments %}
@@ -71,6 +72,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 {% else %}
     <div class="empty-state">
         <p>Пока нет занятий</p>

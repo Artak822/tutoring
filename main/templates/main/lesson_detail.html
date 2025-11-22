@@ -7,11 +7,11 @@
     <a href="{% url 'lesson_list' %}" class="btn btn-secondary">← Назад к списку</a>
 </div>
 
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+<div class="page-header">
     <h2 style="font-weight: 400; font-size: 24px; margin: 0;">
         Занятие
     </h2>
-    <div style="display: flex; gap: 10px;">
+    <div class="page-actions" style="display: flex; gap: 10px;">
         <a href="{% url 'lesson_edit' lesson.pk %}" class="btn">Редактировать</a>
         <a href="{% url 'lesson_delete' lesson.pk %}" class="btn btn-danger">Удалить</a>
     </div>
@@ -74,12 +74,12 @@
     <div class="detail-label" style="font-size: 16px; margin-bottom: 20px;">Посещаемость и оплаты</div>
     <div class="detail-value">
         {% for data in students_data %}
-            <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 4px; border-left: 4px solid {% if data.has_debt %}#ff9800{% elif data.payment %}#28a745{% else %}#999{% endif %};">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+            <div class="student-card" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 4px; border-left: 4px solid {% if data.has_debt %}#ff9800{% elif data.payment %}#28a745{% else %}#999{% endif %};">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
                     <div>
                         <strong><a href="{% url 'student_detail' data.student.pk %}">{{ data.student }}</a></strong>
                     </div>
-                    <div style="display: flex; gap: 10px;">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <a href="{% url 'mark_attendance' lesson.pk data.student.pk %}" class="btn" style="font-size: 12px; padding: 5px 10px;">
                             {% if data.attendance %}Изменить{% else %}Отметить{% endif %} посещаемость
                         </a>

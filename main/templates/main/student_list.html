@@ -3,7 +3,7 @@
 {% block title %}Список учеников{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+<div class="page-header">
     <h2 style="font-weight: 400; font-size: 20px; margin: 0;">
         Список учеников
         {% if students_count is not None %}
@@ -14,14 +14,15 @@
 </div>
 
 {% if students %}
+    <div class="table-responsive">
     <table>
         <thead>
             <tr>
                 <th>Имя</th>
                 <th>Фамилия</th>
                 <th>Класс</th>
-                <th>Телефон</th>
-                <th>Телеграм</th>
+                <th class="table-mobile-hide">Телефон</th>
+                <th class="table-mobile-hide">Телеграм</th>
             </tr>
         </thead>
         <tbody>
@@ -30,12 +31,13 @@
                 <td><a href="{% url 'student_detail' student.pk %}">{{ student.first_name }}</a></td>
                 <td>{{ student.last_name }}</td>
                 <td>{{ student.grade|default:"—" }}</td>
-                <td>{{ student.phone|default:"—" }}</td>
-                <td>{{ student.telegram|default:"—" }}</td>
+                <td class="table-mobile-hide">{{ student.phone|default:"—" }}</td>
+                <td class="table-mobile-hide">{{ student.telegram|default:"—" }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    </div>
 {% else %}
     <div class="empty-state">
         <p>Пока нет учеников в системе</p>

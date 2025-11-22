@@ -7,11 +7,11 @@
     <a href="{% url 'student_list' %}" class="btn btn-secondary">← Назад к списку</a>
 </div>
 
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+<div class="page-header">
     <h2 style="font-weight: 400; font-size: 24px; margin: 0;">
         {{ student.last_name }} {{ student.first_name }}
     </h2>
-    <div style="display: flex; gap: 10px;">
+    <div class="page-actions" style="display: flex; gap: 10px;">
         <a href="{% url 'student_edit' student.pk %}" class="btn">Редактировать</a>
         <a href="{% url 'student_delete' student.pk %}" class="btn btn-danger">Удалить</a>
     </div>
@@ -78,7 +78,7 @@
 
 <div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
     <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Статистика</div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+    <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
         <div style="padding: 15px; background: #e3f2fd; border-radius: 4px;">
             <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Всего занятий</div>
             <div style="font-size: 24px; font-weight: 600; color: #1976d2;">{{ total_lessons }}</div>

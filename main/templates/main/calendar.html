@@ -91,6 +91,67 @@
         color: #666;
         margin-top: 5px;
     }
+    
+    @media (max-width: 768px) {
+        .calendar-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .calendar-nav {
+            width: 100%;
+            justify-content: space-between;
+        }
+        
+        .calendar-title {
+            font-size: 20px;
+        }
+        
+        .calendar-table {
+            font-size: 11px;
+        }
+        
+        .calendar-table th {
+            padding: 8px 4px;
+            font-size: 10px;
+        }
+        
+        .calendar-table td {
+            height: 60px;
+            padding: 4px;
+        }
+        
+        .day-number {
+            font-size: 12px;
+        }
+        
+        .lesson-item {
+            font-size: 9px;
+            padding: 2px 3px;
+            margin-bottom: 2px;
+        }
+        
+        .lesson-count {
+            font-size: 9px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .calendar-table td {
+            height: 50px;
+            padding: 2px;
+        }
+        
+        .day-number {
+            font-size: 11px;
+        }
+        
+        .lesson-item {
+            font-size: 8px;
+            padding: 1px 2px;
+        }
+    }
 </style>
 {% endblock %}
 
