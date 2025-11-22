@@ -170,6 +170,10 @@ class LessonForm(forms.ModelForm):
         else:
             self.fields['students'].queryset = Student.objects.none()
         self.fields['students'].required = True
+        
+        # Устанавливаем значение по умолчанию для стоимости только для новых занятий
+        if not self.instance.pk and not self.fields['lesson_price'].initial:
+            self.fields['lesson_price'].initial = 500
 
 
 class AttendanceForm(forms.ModelForm):
