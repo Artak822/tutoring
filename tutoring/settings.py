@@ -17,20 +17,43 @@ from django.core.management.utils import get_random_secret_key
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Загружаем переменные окружения из .env файла (если используется python-dotenv)
+try:
+    from dotenv import load_dotenv  # type: ignore
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv не установлен, используем только системные переменные окружения
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-p*(o7^#*6#76+4@k%=i1xe(lfpjin(lqr7$h3r_itof(2n3=2g)')
+# В продакшене SECRET_KEY должен быть установлен через переменную окружения!
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    # Только для локальной разработки - в продакшене это вызовет ошибку
+    SECRET_KEY = get_random_secret_key()
+    import warnings
+    warnings.warn(
+        "SECRET_KEY не установлен! Используется временный ключ. "
+        "Установите переменную окружения SECRET_KEY перед деплоем!",
+        UserWarning
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') if os.environ.get('ALLOWED_HOSTS') else []
-# Для локальной разработки разрешаем все хосты
-if DEBUG:
-    ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS должен быть установлен в продакшене!
+ALLOWED_HOSTS_STR = os.environ.get('ALLOWED_HOSTS', '')
+if ALLOWED_HOSTS_STR:
+    ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(',') if host.strip()]
+else:
+    # Для локальной разработки разрешаем все хосты только если DEBUG=True
+    if DEBUG:
+        ALLOWED_HOSTS = ['*']
+    else:
+        # В продакшене без ALLOWED_HOSTS приложение не запустится
+        ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -126,12 +149,20 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Security settings for production
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # HTTPS настройки (раскомментируйте если ваша платформа поддерживает HTTPS)
+    # SECURE_SSL_REDIRECT = True
+    # SESSION_COOKIE_SECURE = True
+    # CSRF_COOKIE_SECURE = True
+    
+    # Безопасность заголовков (всегда включены)
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
+    
+    # HSTS (раскомментируйте если используете HTTPS)
+    # SECURE_HSTS_SECONDS = 31536000
+    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # SECURE_HSTS_PRELOAD = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
