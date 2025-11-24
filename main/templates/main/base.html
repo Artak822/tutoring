@@ -177,6 +177,13 @@
         
        
         
+        nav {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            white-space: nowrap;
+        }
+        
         nav a {
             margin-right: 20px;
             color: var(--text-secondary);
@@ -186,12 +193,13 @@
             padding: 6px 12px;
             border-radius: 8px;
             position: relative;
+            display: inline-block;
+            white-space: nowrap;
         }
         
         nav a:hover {
             color: var(--link-color);
             background: var(--bg-tertiary);
-            transform: translateY(-1px);
         }
         
         nav a::after {
