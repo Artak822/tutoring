@@ -9,100 +9,253 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
     }
     
     .calendar-nav {
         display: flex;
-        gap: 10px;
+        gap: 15px;
         align-items: center;
+        flex: 1;
     }
     
     .calendar-title {
-        font-size: 24px;
-        font-weight: 400;
+        font-size: 28px;
+        font-weight: 600;
+        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+    }
+    
+    .calendar-nav-btn {
+        min-width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 20px;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow);
+    }
+    
+    .calendar-nav-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
     }
     
     .calendar-table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
     }
     
     .calendar-table th {
-        padding: 12px;
+        padding: 16px 8px;
         text-align: center;
-        background: var(--bg-tertiary);
-        font-weight: 500;
-        font-size: 12px;
+        background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+        font-weight: 600;
+        font-size: 13px;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
         color: var(--text-secondary);
-        border: 1px solid var(--border-color);
+        border-bottom: 2px solid var(--border-color);
+        position: relative;
+    }
+    
+    .calendar-table th:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 20%;
+        height: 60%;
+        width: 1px;
+        background: var(--border-color);
     }
     
     .calendar-table td {
         width: 14.28%;
-        height: 100px;
+        height: 120px;
         vertical-align: top;
-        padding: 8px;
+        padding: 10px 8px;
         border: 1px solid var(--border-color);
         background: var(--bg-secondary);
-        transition: background-color 0.3s ease;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .calendar-table td:hover:not(.empty):not(.today) {
+        background: var(--bg-tertiary);
+        transform: scale(1.02);
+        z-index: 1;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     
     .calendar-table td.empty {
-        background: var(--bg-tertiary);
+        background: var(--bg-primary);
+        opacity: 0.5;
     }
     
     .calendar-table td.today {
-        background: var(--stat-blue-bg);
+        background: linear-gradient(135deg, var(--stat-blue-bg) 0%, rgba(77, 166, 255, 0.1) 100%);
+        border: 2px solid var(--btn-primary);
+        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
     }
     
     .day-number {
-        font-weight: 500;
-        margin-bottom: 5px;
+        font-weight: 600;
+        margin-bottom: 8px;
         color: var(--text-primary);
+        font-size: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
     }
     
     .day-number.today {
-        color: var(--link-color);
-        font-weight: 600;
+        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+        color: #fff;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
     }
     
     .lesson-item {
         font-size: 11px;
-        padding: 3px 5px;
-        margin-bottom: 3px;
-        background: var(--btn-primary);
+        padding: 6px 8px;
+        margin-bottom: 4px;
+        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
         color: #fff;
-        border-radius: 3px;
+        border-radius: 8px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        transition: background-color 0.3s ease;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
     .lesson-item:hover {
-        background: var(--btn-primary-hover);
+        background: linear-gradient(135deg, var(--btn-primary-hover) 0%, var(--btn-primary) 100%);
+        transform: translateX(2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
     
     .lesson-item a {
         color: #fff;
         text-decoration: none;
+        display: block;
+        width: 100%;
     }
     
     .lesson-item a:hover {
-        text-decoration: underline;
+        text-decoration: none;
     }
     
     .lesson-count {
-        font-size: 11px;
+        font-size: 10px;
         color: var(--text-secondary);
-        margin-top: 5px;
+        margin-top: 4px;
+        font-weight: 500;
+        padding: 2px 6px;
+        background: var(--bg-tertiary);
+        border-radius: 4px;
+        display: inline-block;
+    }
+    
+    /* Мобильная версия - список вместо таблицы */
+    .calendar-mobile {
+        display: none;
+    }
+    
+    .calendar-mobile-day {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: var(--shadow);
+        border-left: 4px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+    
+    .calendar-mobile-day:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateX(4px);
+    }
+    
+    .calendar-mobile-day.today {
+        border-left-color: var(--btn-primary);
+        background: linear-gradient(135deg, var(--stat-blue-bg) 0%, rgba(77, 166, 255, 0.05) 100%);
+        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+    }
+    
+    .calendar-mobile-day-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .calendar-mobile-day-number {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    .calendar-mobile-day-number.today {
+        color: var(--btn-primary);
+    }
+    
+    .calendar-mobile-day-weekday {
+        font-size: 12px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    
+    .calendar-mobile-lesson {
+        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+        color: #fff;
+        padding: 10px 12px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .calendar-mobile-lesson a {
+        color: #fff;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .calendar-mobile-lesson-time {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+    
+    .calendar-mobile-lesson-students {
+        font-size: 12px;
+        opacity: 0.9;
     }
     
     @media (max-width: 768px) {
         .calendar-header {
             flex-direction: column;
-            align-items: flex-start;
+            align-items: stretch;
             gap: 15px;
         }
         
@@ -112,51 +265,38 @@
         }
         
         .calendar-title {
-            font-size: 20px;
+            font-size: 24px;
+            text-align: center;
         }
         
+        /* Скрываем таблицу на мобильных */
         .calendar-table {
-            font-size: 11px;
+            display: none;
         }
         
-        .calendar-table th {
-            padding: 8px 4px;
-            font-size: 10px;
+        /* Показываем мобильную версию */
+        .calendar-mobile {
+            display: block;
         }
         
-        .calendar-table td {
-            height: 60px;
-            padding: 4px;
-        }
-        
-        .day-number {
-            font-size: 12px;
-        }
-        
-        .lesson-item {
-            font-size: 9px;
-            padding: 2px 3px;
-            margin-bottom: 2px;
-        }
-        
-        .lesson-count {
-            font-size: 9px;
+        .calendar-nav-btn {
+            min-width: 50px;
+            height: 50px;
+            font-size: 24px;
         }
     }
     
     @media (max-width: 480px) {
-        .calendar-table td {
-            height: 50px;
-            padding: 2px;
+        .calendar-title {
+            font-size: 20px;
         }
         
-        .day-number {
-            font-size: 11px;
+        .calendar-mobile-day {
+            padding: 12px;
         }
         
-        .lesson-item {
-            font-size: 8px;
-            padding: 1px 2px;
+        .calendar-mobile-day-number {
+            font-size: 18px;
         }
     }
 </style>
@@ -165,13 +305,14 @@
 {% block content %}
 <div class="calendar-header">
     <div class="calendar-nav">
-        <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-secondary">←</a>
+        <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-secondary calendar-nav-btn">←</a>
         <h2 class="calendar-title">{{ month_name }} {{ year }}</h2>
-        <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-secondary">→</a>
+        <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-secondary calendar-nav-btn">→</a>
     </div>
     <a href="{% url 'lesson_list' %}" class="btn">Все занятия</a>
 </div>
 
+<!-- Десктопная версия -->
 <table class="calendar-table">
     <thead>
         <tr>
@@ -222,5 +363,47 @@
         {% endfor %}
     </tbody>
 </table>
+
+<!-- Мобильная версия -->
+<div class="calendar-mobile">
+    {% for week in weeks %}
+        {% for day in week %}
+            {% if day %}
+            <div class="calendar-mobile-day {% if day.date|date:"Y-m-d" == today|date:"Y-m-d" %}today{% endif %}">
+                <div class="calendar-mobile-day-header">
+                    <div>
+                        <div class="calendar-mobile-day-number {% if day.date|date:"Y-m-d" == today|date:"Y-m-d" %}today{% endif %}">
+                            {{ day.date.day }}
+                        </div>
+                        <div class="calendar-mobile-day-weekday">
+                            {{ day.weekday_name }}
+                        </div>
+                    </div>
+                </div>
+                {% if day.lessons %}
+                    {% for lesson in day.lessons %}
+                    <div class="calendar-mobile-lesson">
+                        <a href="{% url 'lesson_detail' lesson.pk %}">
+                            <div class="calendar-mobile-lesson-time">
+                                {{ lesson.time|time:"H:i" }}
+                            </div>
+                            <div class="calendar-mobile-lesson-students">
+                                {% for student in lesson.students.all %}
+                                    {{ student.last_name }} {{ student.first_name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 10px;">
+                        Нет занятий
+                    </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+</div>
 {% endblock %}
 

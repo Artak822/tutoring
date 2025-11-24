@@ -187,12 +187,14 @@ def calendar_view(request):
         calendar_days.append(None)
     
     # Дни месяца
+    weekday_names = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
     for day in range(1, last_day_num + 1):
         date = datetime(year, month, day).date()
         date_key = date.strftime('%Y-%m-%d')
         calendar_days.append({
             'date': date,
-            'lessons': lessons_by_date.get(date_key, [])
+            'lessons': lessons_by_date.get(date_key, []),
+            'weekday_name': weekday_names[date.weekday()]
         })
     
     # Делим на недели
