@@ -70,65 +70,42 @@
 
 <div class="dashboard-tables" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px;">
     <div>
-        <h3 style="font-weight: 400; font-size: 18px; margin-bottom: 20px;">Последние занятия</h3>
-        {% if recent_lessons %}
+        <h3 style="font-weight: 400; font-size: 18px; margin-bottom: 20px;">Долги</h3>
+        {% if students_with_debts %}
             <table>
                 <thead>
                     <tr>
-                        <th>Дата</th>
-                        <th>Время</th>
-                        <th>Ученики</th>
+                        <th>Ученик</th>
+                        <th>Долг</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for lesson in recent_lessons %}
+                    {% for item in students_with_debts %}
                     <tr>
-                        <td><a href="{% url 'lesson_detail' lesson.pk %}">{{ lesson.date|date:"d.m.Y" }}</a></td>
-                        <td>{{ lesson.time|time:"H:i" }}</td>
-                        <td>
-                            {% for student in lesson.students.all|slice:":2" %}
-                                {{ student }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                            {% if lesson.students.count > 2 %}...{% endif %}
-                        </td>
+                        <td><a href="{% url 'student_detail' item.student.pk %}">{{ item.student.first_name }} {{ item.student.last_name }}</a></td>
+                        <td><span class="status-warning" style="font-weight: 600;">{{ item.debt }} руб.</span></td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         {% else %}
-            <p style="color: var(--text-muted);">Нет занятий</p>
+            <p style="color: var(--text-muted);">Нет долгов</p>
         {% endif %}
         <div style="margin-top: 15px;">
-            <a href="{% url 'lesson_list' %}" class="btn">Все занятия</a>
+            <a href="{% url 'student_list' %}" class="btn">Все ученики</a>
         </div>
     </div>
     
     <div>
-        <h3 style="font-weight: 400; font-size: 18px; margin-bottom: 20px;">Последние ученики</h3>
-        {% if recent_students %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Имя</th>
-                        <th>Фамилия</th>
-                        <th>Класс</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for student in recent_students %}
-                    <tr>
-                        <td><a href="{% url 'student_detail' student.pk %}">{{ student.first_name }}</a></td>
-                        <td>{{ student.last_name }}</td>
-                        <td>{{ student.grade|default:"—" }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p style="color: var(--text-muted);">Нет учеников</p>
-        {% endif %}
-        <div style="margin-top: 15px;">
-            <a href="{% url 'student_list' %}" class="btn">Все ученики</a>
+        <h3 style="font-weight: 400; font-size: 18px; margin-bottom: 20px;">Общая сумма долгов</h3>
+        <div class="stat-card stat-card-orange" style="padding: 20px; text-align: center;">
+            <div class="stat-label" style="font-size: 14px; margin-bottom: 10px;">Всего долгов</div>
+            <div class="stat-value" style="font-size: 36px; font-weight: 700;">{{ total_debts }} руб.</div>
+            {% if students_with_debts %}
+                <div style="margin-top: 15px; font-size: 13px; color: var(--text-secondary);">
+                    Учеников с долгами: {{ students_with_debts|length }}
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -104,27 +104,49 @@
     </div>
 </div>
 
-{% if lessons %}
+{% if lessons_data %}
 <div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--border-color);">
-    <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Последние занятия</div>
+    <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Занятия</div>
+    <div class="table-responsive">
     <table>
         <thead>
             <tr>
                 <th>Дата</th>
                 <th>Время</th>
                 <th>Предмет</th>
+                <th>Посещаемость</th>
+                <th>Оплата</th>
             </tr>
         </thead>
         <tbody>
-            {% for lesson in lessons %}
+            {% for item in lessons_data %}
             <tr>
-                <td><a href="{% url 'lesson_detail' lesson.pk %}">{{ lesson.date|date:"d.m.Y" }}</a></td>
-                <td>{{ lesson.time|time:"H:i" }}</td>
-                <td>{{ lesson.subject|default:"—" }}</td>
+                <td><a href="{% url 'lesson_detail' item.lesson.pk %}">{{ item.lesson.date|date:"d.m.Y" }}</a></td>
+                <td>{{ item.lesson.time|time:"H:i" }}</td>
+                <td>{{ item.lesson.subject|default:"—" }}</td>
+                <td>
+                    {% if item.attendance_status == 'present' %}
+                        <span class="status-success">✓ Посетил</span>
+                    {% elif item.attendance_status == 'absent' %}
+                        <span class="status-error">✗ Не посетил</span>
+                    {% else %}
+                        <span style="color: var(--text-muted);">Не отмечено</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.payment_status == 'paid' %}
+                        <span class="status-success">✓ Оплачено ({{ item.payment.amount }} руб.)</span>
+                    {% elif item.payment_status == 'unpaid' %}
+                        <span class="status-warning" style="font-weight: 600;">⚠ Не оплачено ({{ item.lesson.lesson_price }} руб.)</span>
+                    {% else %}
+                        <span style="color: var(--text-muted);">—</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 {% endif %}
 

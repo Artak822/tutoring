@@ -46,7 +46,34 @@ def student_detail(request, pk):
         messages.error(request, 'Профиль репетитора не найден.')
         return redirect('dashboard')
     student = get_object_or_404(Student, pk=pk, tutor=tutor)
-    lessons = Lesson.objects.filter(tutor=tutor, students=student).order_by('-date', '-time')[:10]
+    
+    # Получаем все занятия ученика с информацией о посещаемости и оплате
+    all_lessons = Lesson.objects.filter(tutor=tutor, students=student).order_by('-date', '-time')
+    lessons_data = []
+    for lesson in all_lessons:
+        attendance = Attendance.objects.filter(lesson=lesson, student=student).first()
+        payment = Payment.objects.filter(lesson=lesson, student=student).first()
+        
+        # Определяем статус посещения
+        attendance_status = None
+        if attendance:
+            attendance_status = attendance.status  # 'present' или 'absent'
+        
+        # Определяем статус оплаты
+        payment_status = None
+        if payment:
+            payment_status = 'paid'
+        elif attendance and attendance.status == 'present' and lesson.lesson_price > 0:
+            payment_status = 'unpaid'
+        
+        lessons_data.append({
+            'lesson': lesson,
+            'attendance': attendance,
+            'attendance_status': attendance_status,
+            'payment': payment,
+            'payment_status': payment_status,
+        })
+    
     payments = Payment.objects.filter(student=student).order_by('-payment_date')[:10]
     
     # Статистика
@@ -58,7 +85,7 @@ def student_detail(request, pk):
     
     return render(request, 'main/student_detail.html', {
         'student': student,
-        'lessons': lessons,
+        'lessons_data': lessons_data,
         'payments': payments,
         'total_paid': total_paid,
         'total_debt': total_debt,
@@ -611,11 +638,20 @@ def dashboard(request):
         lessons_month = tutor.get_lessons_count(start_date=month_ago)
         lessons_week = tutor.get_lessons_count(start_date=week_ago)
         
-        # Последние занятия
-        recent_lessons = Lesson.objects.filter(tutor=tutor).order_by('-date', '-time')[:5]
-        
-        # Последние ученики
-        recent_students = Student.objects.filter(tutor=tutor).order_by('-created_at')[:5]
+        # Список долгов (ученики с долгами)
+        students_with_debts = []
+        total_debts = Decimal('0.00')
+        all_students = Student.objects.filter(tutor=tutor, is_active=True)
+        for student in all_students:
+            debt = student.get_total_debt()
+            if debt > 0:
+                students_with_debts.append({
+                    'student': student,
+                    'debt': debt
+                })
+                total_debts += debt
+        # Сортируем по размеру долга (от большего к меньшему)
+        students_with_debts.sort(key=lambda x: x['debt'], reverse=True)
         
         return render(request, 'main/dashboard.html', {
             'tutor': tutor,
@@ -626,8 +662,8 @@ def dashboard(request):
             'lessons_all_time': lessons_all_time,
             'lessons_month': lessons_month,
             'lessons_week': lessons_week,
-            'recent_lessons': recent_lessons,
-            'recent_students': recent_students,
+            'students_with_debts': students_with_debts,
+            'total_debts': total_debts,
         })
     except Exception as e:
         # Логируем ошибку для отладки
