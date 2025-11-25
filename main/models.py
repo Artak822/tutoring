@@ -36,8 +36,11 @@ class Tutor(models.Model):
         return result['total'] or Decimal('0.00')
     
     def get_lessons_count(self, start_date=None, end_date=None):
-        """Количество занятий за период"""
-        lessons = self.lessons.all()
+        """Количество прошедших занятий за период (только с отметками посещаемости)"""
+        # Получаем все занятия, у которых есть хотя бы одна отметка посещаемости
+        # Занятие считается прошедшим только если есть хотя бы одна отметка посещаемости
+        lessons = self.lessons.filter(attendances__isnull=False).distinct()
+        
         if start_date:
             lessons = lessons.filter(date__gte=start_date)
         if end_date:
@@ -74,10 +77,17 @@ class Student(models.Model):
         return self.payments.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
     
     def get_total_debt(self):
-        """Общий долг ученика"""
+        """Общий долг ученика (только за занятия с отметками посещаемости)"""
         # Суммируем стоимость всех занятий, где ученик присутствовал, но не оплатил
+        # Занятие считается прошедшим только если есть хотя бы одна отметка посещаемости
         total_debt = Decimal('0.00')
+        
         for lesson in self.lessons.all():
+            # Проверяем, что у занятия есть хотя бы одна отметка посещаемости
+            # Если нет ни одной отметки - занятие не было проведено
+            if not lesson.attendances.exists():
+                continue  # Пропускаем занятия без отметок посещаемости
+            
             # Проверяем, присутствовал ли ученик на занятии
             attendance = Attendance.objects.filter(lesson=lesson, student=self, status='present').first()
             if attendance:
