@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from calendar import monthrange
 from decimal import Decimal
 from .models import Student, Lesson, Attendance, Payment, Tutor
-from .forms import StudentForm, LessonForm, AttendanceForm, PaymentForm, TutorRegistrationForm
+from .forms import StudentForm, LessonForm, AttendanceForm, PaymentForm, TutorRegistrationForm, ClearAllDebtsForm
 
 
 def get_tutor(request):
@@ -638,7 +638,7 @@ def dashboard(request):
         lessons_month = tutor.get_lessons_count(start_date=month_ago)
         lessons_week = tutor.get_lessons_count(start_date=week_ago)
         
-        # Список долгов (ученики с долгами)
+        # Список долгов (ученики с долгами) - только топ 4 для дашборда
         students_with_debts = []
         total_debts = Decimal('0.00')
         all_students = Student.objects.filter(tutor=tutor, is_active=True)
@@ -653,6 +653,10 @@ def dashboard(request):
         # Сортируем по размеру долга (от большего к меньшему)
         students_with_debts.sort(key=lambda x: x['debt'], reverse=True)
         
+        # Для дашборда показываем только топ 4
+        top_debtors = students_with_debts[:4]
+        total_debtors_count = len(students_with_debts)
+        
         return render(request, 'main/dashboard.html', {
             'tutor': tutor,
             'students_count': students_count,
@@ -662,7 +666,8 @@ def dashboard(request):
             'lessons_all_time': lessons_all_time,
             'lessons_month': lessons_month,
             'lessons_week': lessons_week,
-            'students_with_debts': students_with_debts,
+            'students_with_debts': top_debtors,
+            'total_debtors_count': total_debtors_count,
             'total_debts': total_debts,
         })
     except Exception as e:
@@ -672,3 +677,96 @@ def dashboard(request):
         print(traceback.format_exc())
         messages.error(request, f'Произошла ошибка: {str(e)}')
         return redirect('login')
+
+
+@login_required
+def students_debt_list(request):
+    """Полный список учеников с долгами"""
+    tutor = get_tutor(request)
+    if not tutor:
+        messages.error(request, 'Профиль репетитора не найден.')
+        return redirect('dashboard')
+    
+    # Список всех долгов (ученики с долгами)
+    students_with_debts = []
+    total_debts = Decimal('0.00')
+    all_students = Student.objects.filter(tutor=tutor, is_active=True)
+    for student in all_students:
+        debt = student.get_total_debt()
+        if debt > 0:
+            students_with_debts.append({
+                'student': student,
+                'debt': debt
+            })
+            total_debts += debt
+    # Сортируем по размеру долга (от большего к меньшему)
+    students_with_debts.sort(key=lambda x: x['debt'], reverse=True)
+    
+    return render(request, 'main/students_debt_list.html', {
+        'students_with_debts': students_with_debts,
+        'total_debts': total_debts,
+    })
+
+
+@login_required
+def clear_all_debts(request, pk):
+    """Погашение всех долгов ученика"""
+    tutor = get_tutor(request)
+    if not tutor:
+        messages.error(request, 'Профиль репетитора не найден.')
+        return redirect('dashboard')
+    
+    student = get_object_or_404(Student, pk=pk, tutor=tutor)
+    
+    # Получаем все неоплаченные занятия
+    unpaid_lessons = []
+    for lesson in student.lessons.all():
+        # Проверяем, что у занятия есть отметки посещаемости
+        if not lesson.attendances.exists():
+            continue
+        
+        # Проверяем, присутствовал ли ученик на занятии
+        attendance = Attendance.objects.filter(lesson=lesson, student=student, status='present').first()
+        if attendance:
+            # Проверяем, оплатил ли он это занятие
+            payment = Payment.objects.filter(lesson=lesson, student=student).first()
+            if not payment and lesson.lesson_price > 0:
+                unpaid_lessons.append(lesson)
+    
+    if not unpaid_lessons:
+        messages.info(request, f'У ученика {student} нет долгов.')
+        return redirect('student_detail', pk=pk)
+    
+    total_debt = sum([lesson.lesson_price for lesson in unpaid_lessons])
+    
+    if request.method == 'POST':
+        form = ClearAllDebtsForm(request.POST)
+        if form.is_valid():
+            payment_method = form.cleaned_data['payment_method']
+            payment_date = form.cleaned_data['payment_date']
+            notes = form.cleaned_data['notes']
+            
+            # Создаем платежи для всех неоплаченных занятий
+            payments_created = 0
+            for lesson in unpaid_lessons:
+                Payment.objects.create(
+                    student=student,
+                    lesson=lesson,
+                    amount=lesson.lesson_price,
+                    payment_date=payment_date,
+                    payment_method=payment_method,
+                    notes=notes
+                )
+                payments_created += 1
+            
+            messages.success(request, f'Все долги ({total_debt} руб.) успешно погашены. Создано платежей: {payments_created}.')
+            return redirect('student_detail', pk=pk)
+    else:
+        form = ClearAllDebtsForm()
+    
+    return render(request, 'main/clear_all_debts.html', {
+        'form': form,
+        'student': student,
+        'unpaid_lessons': unpaid_lessons,
+        'total_debt': total_debt,
+    })

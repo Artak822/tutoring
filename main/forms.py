@@ -241,3 +241,32 @@ class PaymentForm(forms.ModelForm):
                 self.fields['amount'].initial = lesson.lesson_price
         if not self.fields['payment_date'].initial:
             self.fields['payment_date'].initial = timezone.now().date()
+
+
+class ClearAllDebtsForm(forms.Form):
+    """Форма для погашения всех долгов ученика"""
+    payment_method = forms.ChoiceField(
+        choices=Payment.PAYMENT_METHOD_CHOICES,
+        widget=forms.RadioSelect(attrs={
+            'class': 'form-radio'
+        }),
+        label='Способ оплаты',
+        initial='cash'
+    )
+    payment_date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'class': 'form-input',
+            'type': 'date'
+        }),
+        label='Дата оплаты',
+        initial=timezone.now().date()
+    )
+    notes = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-textarea',
+            'rows': 3,
+            'placeholder': 'Дополнительные заметки (необязательно)'
+        }),
+        label='Заметки',
+        required=False
+    )

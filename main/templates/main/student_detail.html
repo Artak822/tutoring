@@ -11,7 +11,12 @@
     <h2 style="font-weight: 400; font-size: 24px; margin: 0;">
         {{ student.last_name }} {{ student.first_name }}
     </h2>
-    <div class="page-actions" style="display: flex; gap: 10px;">
+    <div class="page-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        {% if total_debt > 0 %}
+        <a href="{% url 'clear_all_debts' student.pk %}" class="btn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+            Погасить долги
+        </a>
+        {% endif %}
         <a href="{% url 'student_edit' student.pk %}" class="btn">Редактировать</a>
         <a href="{% url 'student_delete' student.pk %}" class="btn btn-danger">Удалить</a>
     </div>

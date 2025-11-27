@@ -1,0 +1,92 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Список долгов{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media (max-width: 768px) {
+        .debt-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        
+        .debt-header h2 {
+            margin-bottom: 15px !important;
+        }
+        
+        .total-debt-card {
+            padding: 15px !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="debt-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h2 style="margin: 0; font-weight: 400; font-size: 24px;">
+        Список учеников с долгами
+    </h2>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Вернуться к дашборду</a>
+</div>
+
+<div class="total-debt-card" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); border-radius: 12px; padding: 25px; margin-bottom: 30px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Общая сумма долгов</div>
+    <div style="font-size: 42px; font-weight: 700; margin-bottom: 5px;">{{ total_debts }} руб.</div>
+    {% if students_with_debts %}
+        <div style="font-size: 13px; opacity: 0.85;">
+            Учеников с долгами: {{ students_with_debts|length }}
+        </div>
+    {% endif %}
+</div>
+
+{% if students_with_debts %}
+    <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>Ученик</th>
+                    <th style="text-align: right;">Сумма долга</th>
+                    <th style="width: 150px; text-align: center;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in students_with_debts %}
+                <tr {% if forloop.counter <= 4 %}style="background-color: rgba(255, 107, 107, 0.05);"{% endif %}>
+                    <td style="font-weight: 600; color: var(--text-muted);">{{ forloop.counter }}</td>
+                    <td>
+                        <a href="{% url 'student_detail' item.student.pk %}" style="font-weight: 500;">
+                            {{ item.student.first_name }} {{ item.student.last_name }}
+                        </a>
+                        {% if forloop.counter <= 4 %}
+                            <span style="display: inline-block; background-color: #ff6b6b; color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 8px; font-weight: 600;">
+                                ТОП {{ forloop.counter }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="status-warning" style="font-weight: 600; font-size: 16px;">{{ item.debt }} руб.</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <a href="{% url 'student_detail' item.student.pk %}" class="btn btn-sm" style="padding: 6px 12px; font-size: 13px;">
+                            Подробнее
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div style="background: white; border-radius: 12px; padding: 40px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <p style="color: var(--text-muted); font-size: 16px; margin: 0;">
+            🎉 Отлично! У вас нет учеников с долгами.
+        </p>
+    </div>
+{% endif %}
+
+<div style="margin-top: 30px; text-align: center;">
+    <a href="{% url 'student_list' %}" class="btn btn-secondary">Все ученики</a>
+</div>
+{% endblock %}
+

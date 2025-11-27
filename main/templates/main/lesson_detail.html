@@ -17,61 +17,8 @@
     </div>
 </div>
 
-<div class="detail-item">
-    <div class="detail-label">Ученики</div>
-    <div class="detail-value">
-        {% for student in lesson.students.all %}
-            <a href="{% url 'student_detail' student.pk %}">{{ student }}</a>{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    </div>
-</div>
-
-<div class="detail-item">
-    <div class="detail-label">Дата</div>
-    <div class="detail-value">{{ lesson.date|date:"d.m.Y" }}</div>
-</div>
-
-<div class="detail-item">
-    <div class="detail-label">Время</div>
-    <div class="detail-value">{{ lesson.time|time:"H:i" }}</div>
-</div>
-
-<div class="detail-item">
-    <div class="detail-label">Длительность</div>
-    <div class="detail-value">{{ lesson.duration }} минут</div>
-</div>
-
-<div class="detail-item">
-    <div class="detail-label">Стоимость занятия (за одного ученика)</div>
-    <div class="detail-value">{{ lesson.lesson_price }} руб.</div>
-</div>
-
-{% if present_count > 0 %}
-<div class="detail-item">
-    <div class="detail-label">Общая стоимость занятия</div>
-    <div class="detail-value">
-        <strong>{{ total_price }} руб.</strong>
-        <span style="font-size: 14px; color: var(--text-secondary);">({{ lesson.lesson_price }} × {{ present_count }} пришедших)</span>
-    </div>
-</div>
-{% endif %}
-
-{% if lesson.subject %}
-<div class="detail-item">
-    <div class="detail-label">Предмет/Тема</div>
-    <div class="detail-value">{{ lesson.subject }}</div>
-</div>
-{% endif %}
-
-{% if lesson.notes %}
-<div class="detail-item">
-    <div class="detail-label">Заметки</div>
-    <div class="detail-value" style="white-space: pre-wrap;">{{ lesson.notes }}</div>
-</div>
-{% endif %}
-
-<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--border-color);">
-    <div class="detail-label" style="font-size: 16px; margin-bottom: 20px;">Посещаемость и оплаты</div>
+<div class="detail-item" style="margin-top: 20px; margin-bottom: 40px; padding: 30px; background: var(--bg-tertiary); border-radius: 12px; border: 2px solid var(--border-color);">
+    <div class="detail-label" style="font-size: 18px; margin-bottom: 20px; font-weight: 600;">Посещаемость и оплаты</div>
     <div class="detail-value">
         {% for data in students_data %}
             <div class="student-card {% if data.has_debt %}student-card-debt{% elif data.payment %}student-card-paid{% else %}student-card-default{% endif %}">
@@ -126,6 +73,59 @@
         {% endfor %}
     </div>
 </div>
+
+<div class="detail-item">
+    <div class="detail-label">Ученики</div>
+    <div class="detail-value">
+        {% for student in lesson.students.all %}
+            <a href="{% url 'student_detail' student.pk %}">{{ student }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Дата</div>
+    <div class="detail-value">{{ lesson.date|date:"d.m.Y" }}</div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Время</div>
+    <div class="detail-value">{{ lesson.time|time:"H:i" }}</div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Длительность</div>
+    <div class="detail-value">{{ lesson.duration }} минут</div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Стоимость занятия (за одного ученика)</div>
+    <div class="detail-value">{{ lesson.lesson_price }} руб.</div>
+</div>
+
+{% if present_count > 0 %}
+<div class="detail-item">
+    <div class="detail-label">Общая стоимость занятия</div>
+    <div class="detail-value">
+        <strong>{{ total_price }} руб.</strong>
+        <span style="font-size: 14px; color: var(--text-secondary);">({{ lesson.lesson_price }} × {{ present_count }} пришедших)</span>
+    </div>
+</div>
+{% endif %}
+
+{% if lesson.subject %}
+<div class="detail-item">
+    <div class="detail-label">Предмет/Тема</div>
+    <div class="detail-value">{{ lesson.subject }}</div>
+</div>
+{% endif %}
+
+{% if lesson.notes %}
+<div class="detail-item">
+    <div class="detail-label">Заметки</div>
+    <div class="detail-value" style="white-space: pre-wrap;">{{ lesson.notes }}</div>
+</div>
+{% endif %}
 
 <div class="detail-item">
     <div class="detail-label">Дата создания</div>

@@ -70,11 +70,17 @@
 
 <div class="dashboard-tables" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px;">
     <div>
-        <h3 style="font-weight: 400; font-size: 18px; margin-bottom: 20px;">Долги</h3>
+        <h3 style="font-weight: 400; font-size: 18px; margin-bottom: 20px;">
+            Топ 4 должников
+            {% if total_debtors_count > 4 %}
+                <span style="font-size: 14px; color: var(--text-muted); font-weight: 400;">(всего: {{ total_debtors_count }})</span>
+            {% endif %}
+        </h3>
         {% if students_with_debts %}
             <table>
                 <thead>
                     <tr>
+                        <th style="width: 40px;">#</th>
                         <th>Ученик</th>
                         <th>Долг</th>
                     </tr>
@@ -82,6 +88,7 @@
                 <tbody>
                     {% for item in students_with_debts %}
                     <tr>
+                        <td style="font-weight: 600; color: var(--text-muted);">{{ forloop.counter }}</td>
                         <td><a href="{% url 'student_detail' item.student.pk %}">{{ item.student.first_name }} {{ item.student.last_name }}</a></td>
                         <td><span class="status-warning" style="font-weight: 600;">{{ item.debt }} руб.</span></td>
                     </tr>
@@ -92,7 +99,11 @@
             <p style="color: var(--text-muted);">Нет долгов</p>
         {% endif %}
         <div style="margin-top: 15px;">
-            <a href="{% url 'student_list' %}" class="btn">Все ученики</a>
+            {% if total_debtors_count > 0 %}
+                <a href="{% url 'students_debt_list' %}" class="btn">Все ученики с долгами</a>
+            {% else %}
+                <a href="{% url 'student_list' %}" class="btn">Все ученики</a>
+            {% endif %}
         </div>
     </div>
     
@@ -101,9 +112,9 @@
         <div class="stat-card stat-card-orange" style="padding: 20px; text-align: center;">
             <div class="stat-label" style="font-size: 14px; margin-bottom: 10px;">Всего долгов</div>
             <div class="stat-value" style="font-size: 36px; font-weight: 700;">{{ total_debts }} руб.</div>
-            {% if students_with_debts %}
+            {% if total_debtors_count > 0 %}
                 <div style="margin-top: 15px; font-size: 13px; color: var(--text-secondary);">
-                    Учеников с долгами: {{ students_with_debts|length }}
+                    Учеников с долгами: {{ total_debtors_count }}
                 </div>
             {% endif %}
         </div>

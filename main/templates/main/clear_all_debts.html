@@ -1,0 +1,240 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Погасить все долги - {{ student.last_name }} {{ student.first_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .debt-summary {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+        border-radius: 12px;
+        padding: 30px;
+        color: white;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .debt-summary h3 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        opacity: 0.9;
+    }
+    
+    .debt-summary .amount {
+        font-size: 48px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .debt-summary .count {
+        font-size: 14px;
+        opacity: 0.85;
+    }
+    
+    .unpaid-lessons-list {
+        background: var(--bg-tertiary);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .unpaid-lessons-list h4 {
+        font-size: 16px;
+        margin-bottom: 15px;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    
+    .lesson-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid var(--status-warning);
+        transition: all 0.2s ease;
+    }
+    
+    .lesson-item:hover {
+        transform: translateX(4px);
+        box-shadow: var(--shadow);
+    }
+    
+    .lesson-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .lesson-date {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .lesson-subject {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    
+    .lesson-price {
+        font-weight: 700;
+        color: var(--status-warning);
+        font-size: 16px;
+    }
+    
+    .form-radio {
+        margin-right: 10px;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .radio-option {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background: var(--bg-tertiary);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+    
+    .radio-option:hover {
+        background: var(--bg-primary);
+        border-color: var(--btn-primary);
+    }
+    
+    .radio-option input[type="radio"]:checked + label {
+        font-weight: 600;
+        color: var(--btn-primary);
+    }
+    
+    .radio-option label {
+        cursor: pointer;
+        margin: 0;
+        font-size: 16px;
+        flex-grow: 1;
+    }
+    
+    @media (max-width: 768px) {
+        .debt-summary .amount {
+            font-size: 36px;
+        }
+        
+        .unpaid-lessons-list {
+            max-height: 200px;
+        }
+        
+        .lesson-item {
+            flex-direction: column;
+            gap: 8px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <a href="{% url 'student_detail' student.pk %}" class="btn btn-secondary">← Назад к ученику</a>
+</div>
+
+<h2 style="margin-bottom: 30px; font-weight: 400; font-size: 24px;">
+    Погасить все долги: {{ student.last_name }} {{ student.first_name }}
+</h2>
+
+<div class="debt-summary">
+    <h3>Общая сумма долга</h3>
+    <div class="amount">{{ total_debt }} руб.</div>
+    <div class="count">Неоплаченных занятий: {{ unpaid_lessons|length }}</div>
+</div>
+
+<div class="unpaid-lessons-list">
+    <h4>Список неоплаченных занятий:</h4>
+    {% for lesson in unpaid_lessons %}
+    <div class="lesson-item">
+        <div>
+            <div class="lesson-date">
+                {{ lesson.date|date:"d.m.Y" }} в {{ lesson.time|time:"H:i" }}
+            </div>
+            {% if lesson.subject %}
+            <div class="lesson-subject">{{ lesson.subject }}</div>
+            {% endif %}
+        </div>
+        <div class="lesson-price">{{ lesson.lesson_price }} руб.</div>
+    </div>
+    {% endfor %}
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label class="form-label">{{ form.payment_method.label }}</label>
+        {% for choice in form.payment_method %}
+        <div class="radio-option">
+            {{ choice.tag }}
+            <label for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+        </div>
+        {% endfor %}
+        {% if form.payment_method.errors %}
+            <ul class="errorlist">
+                {% for error in form.payment_method.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label" for="{{ form.payment_date.id_for_label }}">{{ form.payment_date.label }}</label>
+        {{ form.payment_date }}
+        {% if form.payment_date.errors %}
+            <ul class="errorlist">
+                {% for error in form.payment_date.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+        {{ form.notes }}
+        {% if form.notes.errors %}
+            <ul class="errorlist">
+                {% for error in form.notes.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+            ✓ Погасить все долги ({{ total_debt }} руб.)
+        </button>
+        <a href="{% url 'student_detail' student.pk %}" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+
+<script>
+    // Добавляем обработчик для кликов на radio-option
+    document.addEventListener('DOMContentLoaded', function() {
+        const radioOptions = document.querySelectorAll('.radio-option');
+        radioOptions.forEach(option => {
+            option.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'INPUT') {
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+
