@@ -97,7 +97,7 @@
     {% csrf_token %}
     
     <div class="form-group">
-        <label class="form-label" for="{{ form.students.id_for_label }}">{{ form.students.label }}</label>
+        <label class="form-label">{{ form.students.label }} *</label>
         {{ form.students }}
         {% if form.students.errors %}
             <ul class="errorlist">
@@ -106,8 +106,8 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        <div style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">
-            Удерживайте Ctrl (Cmd на Mac) для выбора нескольких учеников
+        <div style="font-size: 13px; color: var(--text-secondary); margin-top: 10px;">
+            💡 <strong>Совет:</strong> Кликните на заголовок группы, чтобы выбрать всех учеников. Кликните на отдельного ученика, чтобы выбрать только его.
         </div>
     </div>
     
@@ -201,8 +201,8 @@
 </form>
 
 <script>
-    // Добавляем обработчик для кликов на radio-option
     document.addEventListener('DOMContentLoaded', function() {
+        // Обработчик для radio-опций
         const radioOptions = document.querySelectorAll('.radio-option');
         radioOptions.forEach(option => {
             option.addEventListener('click', function(e) {

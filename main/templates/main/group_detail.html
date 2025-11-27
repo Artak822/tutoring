@@ -1,0 +1,67 @@
+{% extends 'main/base.html' %}
+
+{% block title %}{{ group.name }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <a href="{% url 'group_list' %}" class="btn btn-secondary">← Назад к списку</a>
+</div>
+
+<div class="page-header">
+    <h2>{{ group.name }}</h2>
+    <div class="page-actions" style="display: flex; gap: 10px;">
+        <a href="{% url 'group_edit' group.pk %}" class="btn">Редактировать</a>
+        <a href="{% url 'group_delete' group.pk %}" class="btn btn-danger">Удалить</a>
+    </div>
+</div>
+
+{% if group.description %}
+<div class="detail-item">
+    <div class="detail-label">Описание</div>
+    <div class="detail-value">{{ group.description }}</div>
+</div>
+{% endif %}
+
+<div class="detail-item">
+    <div class="detail-label">Количество учеников</div>
+    <div class="detail-value">{{ students|length }}</div>
+</div>
+
+<div class="detail-item">
+    <div class="detail-label">Дата создания</div>
+    <div class="detail-value">{{ group.created_at|date:"d.m.Y H:i" }}</div>
+</div>
+
+<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--border-color);">
+    <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Ученики в группе</div>
+    {% if students %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Ученик</th>
+                    <th>Телефон</th>
+                    <th>Класс</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>
+                        <a href="{% url 'student_detail' student.pk %}">{{ student.last_name }} {{ student.first_name }}</a>
+                    </td>
+                    <td>{{ student.phone|default:"—" }}</td>
+                    <td>{{ student.grade|default:"—" }}</td>
+                    <td>
+                        <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm" style="padding: 6px 12px; font-size: 13px;">Подробнее</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="color: var(--text-muted);">В группе пока нет учеников.</p>
+    {% endif %}
+</div>
+{% endblock %}
+

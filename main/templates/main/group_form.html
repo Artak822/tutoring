@@ -1,0 +1,71 @@
+{% extends 'main/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    select[multiple].form-select {
+        min-height: 200px;
+        padding: 8px;
+    }
+    
+    select[multiple].form-select option {
+        padding: 8px 10px;
+        margin: 2px 0;
+        border-radius: 4px;
+    }
+    
+    select[multiple].form-select option:checked {
+        background: var(--btn-primary) !important;
+        color: #fff !important;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <a href="{% if group %}{% url 'group_detail' group.pk %}{% else %}{% url 'group_list' %}{% endif %}" class="btn btn-secondary">← Назад</a>
+</div>
+
+<h2 style="margin-bottom: 30px;">{{ title }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label class="form-label" for="{{ form.name.id_for_label }}">{{ form.name.label }} *</label>
+        {{ form.name }}
+        {{ form.name.errors }}
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+        {{ form.description }}
+        {{ form.description.errors }}
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label" for="{{ form.students.id_for_label }}">{{ form.students.label }}</label>
+        {{ form.students }}
+        {{ form.students.errors }}
+        <div style="margin-top: 5px; font-size: 12px; color: var(--text-secondary);">
+            {{ form.students.help_text }}
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label class="form-checkbox-label">
+            {{ form.is_active }}
+            <span>{{ form.is_active.label }}</span>
+        </label>
+        {{ form.is_active.errors }}
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn">Сохранить</button>
+        <a href="{% if group %}{% url 'group_detail' group.pk %}{% else %}{% url 'group_list' %}{% endif %}" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}
+

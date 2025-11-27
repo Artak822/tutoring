@@ -9,8 +9,8 @@ from django.db.models import Q, Sum
 from datetime import datetime, timedelta
 from calendar import monthrange
 from decimal import Decimal
-from .models import Student, Lesson, Attendance, Payment, Tutor
-from .forms import StudentForm, LessonForm, AttendanceForm, PaymentForm, TutorRegistrationForm, ClearAllDebtsForm, RecurringLessonForm
+from .models import Student, Lesson, Attendance, Payment, Tutor, StudentGroup
+from .forms import StudentForm, LessonForm, AttendanceForm, PaymentForm, TutorRegistrationForm, ClearAllDebtsForm, RecurringLessonForm, StudentGroupForm
 
 
 def get_tutor(request):
@@ -504,26 +504,46 @@ def mark_attendance(request, lesson_pk, student_pk):
         messages.error(request, 'Этот ученик не назначен на данное занятие.')
         return redirect('lesson_detail', pk=lesson_pk)
     
-    attendance, created = Attendance.objects.get_or_create(
-        lesson=lesson,
-        student=student,
-        defaults={'status': 'present'}
-    )
+    # Проверяем, существует ли уже запись о посещаемости
+    try:
+        attendance = Attendance.objects.get(lesson=lesson, student=student)
+        is_new = False
+    except Attendance.DoesNotExist:
+        attendance = None
+        is_new = True
     
     if request.method == 'POST':
-        form = AttendanceForm(request.POST, instance=attendance)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'Посещаемость для {student} отмечена.')
-            return redirect('lesson_detail', pk=lesson_pk)
+        if is_new:
+            # Создаем новую запись
+            form = AttendanceForm(request.POST)
+            if form.is_valid():
+                attendance = form.save(commit=False)
+                attendance.lesson = lesson
+                attendance.student = student
+                attendance.save()
+                messages.success(request, f'Посещаемость для {student} отмечена.')
+                return redirect('lesson_detail', pk=lesson_pk)
+        else:
+            # Обновляем существующую
+            form = AttendanceForm(request.POST, instance=attendance)
+            if form.is_valid():
+                form.save()
+                messages.success(request, f'Посещаемость для {student} обновлена.')
+                return redirect('lesson_detail', pk=lesson_pk)
     else:
-        form = AttendanceForm(instance=attendance)
+        if is_new:
+            # Для новой записи создаем форму без instance
+            form = AttendanceForm(initial={'status': 'present'})
+        else:
+            # Для существующей показываем текущие данные
+            form = AttendanceForm(instance=attendance)
     
     return render(request, 'main/mark_attendance.html', {
         'form': form,
         'lesson': lesson,
         'student': student,
-        'attendance': attendance
+        'attendance': attendance,
+        'is_new': is_new
     })
 
 
@@ -572,7 +592,12 @@ def mark_payment(request, lesson_pk, student_pk):
         if existing_payment:
             form = PaymentForm(instance=existing_payment, lesson=lesson, student=student)
         else:
-            form = PaymentForm(lesson=lesson, student=student)
+            # Для новой формы устанавливаем начальные данные
+            initial_data = {
+                'payment_date': timezone.now().date().strftime('%Y-%m-%d'),
+                'amount': lesson.lesson_price if lesson.lesson_price > 0 else None
+            }
+            form = PaymentForm(initial=initial_data, lesson=lesson, student=student)
     
     return render(request, 'main/mark_payment.html', {
         'form': form,
@@ -804,6 +829,95 @@ def recurring_lesson_create(request):
 
 
 @login_required
+def group_list(request):
+    """Список всех групп"""
+    tutor = get_tutor(request)
+    if not tutor:
+        messages.error(request, 'Профиль репетитора не найден.')
+        return redirect('dashboard')
+    groups = StudentGroup.objects.filter(tutor=tutor, is_active=True)
+    return render(request, 'main/group_list.html', {'groups': groups})
+
+
+@login_required
+def group_detail(request, pk):
+    """Детальная информация о группе"""
+    tutor = get_tutor(request)
+    if not tutor:
+        messages.error(request, 'Профиль репетитора не найден.')
+        return redirect('dashboard')
+    group = get_object_or_404(StudentGroup, pk=pk, tutor=tutor)
+    students = group.students.filter(is_active=True).order_by('last_name', 'first_name')
+    return render(request, 'main/group_detail.html', {
+        'group': group,
+        'students': students
+    })
+
+
+@login_required
+def group_create(request):
+    """Создание новой группы"""
+    tutor = get_tutor(request)
+    if not tutor:
+        messages.error(request, 'Профиль репетитора не найден.')
+        return redirect('dashboard')
+    if request.method == 'POST':
+        form = StudentGroupForm(request.POST, tutor=tutor)
+        if form.is_valid():
+            group = form.save(commit=False)
+            group.tutor = tutor
+            # Не вызываем save() здесь, вызываем в форме
+            group = form.save()  # Это сохранит группу и учеников
+            messages.success(request, f'Группа "{group.name}" успешно создана.')
+            return redirect('group_detail', pk=group.pk)
+    else:
+        form = StudentGroupForm(tutor=tutor)
+    return render(request, 'main/group_form.html', {
+        'form': form,
+        'title': 'Создать группу'
+    })
+
+
+@login_required
+def group_edit(request, pk):
+    """Редактирование группы"""
+    tutor = get_tutor(request)
+    if not tutor:
+        messages.error(request, 'Профиль репетитора не найден.')
+        return redirect('dashboard')
+    group = get_object_or_404(StudentGroup, pk=pk, tutor=tutor)
+    if request.method == 'POST':
+        form = StudentGroupForm(request.POST, instance=group, tutor=tutor)
+        if form.is_valid():
+            group = form.save()
+            messages.success(request, f'Группа "{group.name}" успешно обновлена.')
+            return redirect('group_detail', pk=group.pk)
+    else:
+        form = StudentGroupForm(instance=group, tutor=tutor)
+    return render(request, 'main/group_form.html', {
+        'form': form,
+        'group': group,
+        'title': 'Редактировать группу'
+    })
+
+
+@login_required
+def group_delete(request, pk):
+    """Удаление группы"""
+    tutor = get_tutor(request)
+    if not tutor:
+        messages.error(request, 'Профиль репетитора не найден.')
+        return redirect('dashboard')
+    group = get_object_or_404(StudentGroup, pk=pk, tutor=tutor)
+    if request.method == 'POST':
+        group_name = group.name
+        group.delete()
+        messages.success(request, f'Группа "{group_name}" успешно удалена.')
+        return redirect('group_list')
+    return render(request, 'main/group_confirm_delete.html', {'group': group})
+
+
+@login_required
 def clear_all_debts(request, pk):
     """Погашение всех долгов ученика"""
     tutor = get_tutor(request)
@@ -857,7 +971,9 @@ def clear_all_debts(request, pk):
             messages.success(request, f'Все долги ({total_debt} руб.) успешно погашены. Создано платежей: {payments_created}.')
             return redirect('student_detail', pk=pk)
     else:
-        form = ClearAllDebtsForm()
+        # Устанавливаем начальные данные с сегодняшней датой
+        initial_data = {'payment_date': timezone.now().date().strftime('%Y-%m-%d')}
+        form = ClearAllDebtsForm(initial=initial_data)
     
     return render(request, 'main/clear_all_debts.html', {
         'form': form,

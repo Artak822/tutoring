@@ -48,9 +48,32 @@ class Tutor(models.Model):
         return lessons.count()
 
 
+class StudentGroup(models.Model):
+    """Модель группы учеников"""
+    tutor = models.ForeignKey(Tutor, on_delete=models.CASCADE, related_name='groups', verbose_name='Репетитор')
+    name = models.CharField(max_length=200, verbose_name='Название группы')
+    description = models.TextField(blank=True, verbose_name='Описание')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
+    is_active = models.BooleanField(default=True, verbose_name='Активна')
+    
+    class Meta:
+        verbose_name = 'Группа учеников'
+        verbose_name_plural = 'Группы учеников'
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+    
+    def get_students_count(self):
+        """Количество учеников в группе"""
+        return self.students.filter(is_active=True).count()
+
+
 class Student(models.Model):
     """Модель ученика"""
     tutor = models.ForeignKey(Tutor, on_delete=models.CASCADE, related_name='students', verbose_name='Репетитор')
+    groups = models.ManyToManyField(StudentGroup, related_name='students', blank=True, verbose_name='Группы')
     first_name = models.CharField(max_length=100, verbose_name='Имя')
     last_name = models.CharField(max_length=100, verbose_name='Фамилия')
     phone = models.CharField(max_length=20, blank=True, null=True, verbose_name='Телефон')

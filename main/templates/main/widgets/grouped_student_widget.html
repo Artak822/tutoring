@@ -1,0 +1,230 @@
+<div class="grouped-student-selector" data-widget-name="{{ widget.name }}">
+    <style>
+        .grouped-student-selector {
+            margin-top: 10px;
+        }
+        
+        .student-group-block {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .student-group-block:hover {
+            border-color: var(--btn-primary);
+            box-shadow: var(--shadow);
+        }
+        
+        .student-group-block.selected {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(10, 88, 202, 0.05) 100%);
+            border-color: var(--btn-primary);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+        
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .group-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .group-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+        
+        .student-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .student-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .student-item:hover {
+            border-color: var(--btn-primary);
+            transform: translateX(2px);
+        }
+        
+        .student-item.selected {
+            background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+            color: white;
+            border-color: var(--btn-primary);
+        }
+        
+        .student-item input[type="checkbox"] {
+            display: none;
+        }
+        
+        .student-item-label {
+            flex-grow: 1;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .student-item.selected .student-item-label {
+            color: white;
+        }
+        
+        .no-group-section {
+            margin-top: 20px;
+        }
+        
+        .no-group-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+    
+    <!-- Группы с учениками -->
+    {% for group in groups %}
+    <div class="student-group-block" data-group-id="{{ group.pk }}">
+        <div class="group-header">
+            <div class="group-name">📁 {{ group.name }}</div>
+            <div class="group-count">{{ group.students.count }} уч.</div>
+        </div>
+        <div class="student-items">
+            {% for student in group.students.all %}
+            <div class="student-item" data-student-id="{{ student.pk }}" data-group-id="{{ group.pk }}">
+                <input type="checkbox" 
+                       name="{{ widget.name }}" 
+                       value="{{ student.pk }}"
+                       id="student_{{ student.pk }}"
+                       {% if student.pk|stringformat:"s" in widget.value|default_if_none:"" %}checked{% endif %}>
+                <label class="student-item-label" for="student_{{ student.pk }}">
+                    {{ student.first_name }} {{ student.last_name }}
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+    
+    <!-- Ученики без групп -->
+    {% if students_without_groups %}
+    <div class="no-group-section">
+        <div class="no-group-title">Без группы</div>
+        <div class="student-items">
+            {% for student in students_without_groups %}
+            <div class="student-item" data-student-id="{{ student.pk }}">
+                <input type="checkbox" 
+                       name="{{ widget.name }}" 
+                       value="{{ student.pk }}"
+                       id="student_{{ student.pk }}"
+                       {% if student.pk|stringformat:"s" in widget.value|default_if_none:"" %}checked{% endif %}>
+                <label class="student-item-label" for="student_{{ student.pk }}">
+                    {{ student.first_name }} {{ student.last_name }}
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <script>
+    (function() {
+        const selector = document.querySelector('.grouped-student-selector[data-widget-name="{{ widget.name }}"]');
+        if (!selector) return;
+        
+        // Обработка кликов на отдельных учеников
+        const studentItems = selector.querySelectorAll('.student-item');
+        studentItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                if (e.target !== checkbox && e.target.tagName !== 'LABEL') {
+                    checkbox.checked = !checkbox.checked;
+                }
+                
+                // Обновляем визуальное состояние
+                if (checkbox.checked) {
+                    this.classList.add('selected');
+                } else {
+                    this.classList.remove('selected');
+                }
+                
+                // Обновляем состояние группы
+                updateGroupState(this.closest('.student-group-block'));
+            });
+            
+            // Устанавливаем начальное состояние
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox.checked) {
+                item.classList.add('selected');
+            }
+        });
+        
+        // Обработка кликов на блоки групп
+        const groupBlocks = selector.querySelectorAll('.student-group-block');
+        groupBlocks.forEach(block => {
+            const header = block.querySelector('.group-header');
+            header.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const items = block.querySelectorAll('.student-item');
+                const checkboxes = block.querySelectorAll('input[type="checkbox"]');
+                
+                // Проверяем, все ли выбраны
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                
+                // Переключаем состояние
+                items.forEach(item => {
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+                    checkbox.checked = !allChecked;
+                    
+                    if (checkbox.checked) {
+                        item.classList.add('selected');
+                    } else {
+                        item.classList.remove('selected');
+                    }
+                });
+                
+                updateGroupState(block);
+            });
+            
+            // Устанавливаем начальное состояние группы
+            updateGroupState(block);
+        });
+        
+        function updateGroupState(block) {
+            if (!block) return;
+            
+            const checkboxes = block.querySelectorAll('input[type="checkbox"]');
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            
+            if (checkedCount === checkboxes.length && checkedCount > 0) {
+                block.classList.add('selected');
+            } else {
+                block.classList.remove('selected');
+            }
+        }
+    })();
+    </script>
+</div>
+

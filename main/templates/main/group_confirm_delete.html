@@ -1,0 +1,25 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Удалить группу{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <a href="{% url 'group_detail' group.pk %}" class="btn btn-secondary">← Назад</a>
+</div>
+
+<h2 style="margin-bottom: 30px;">Удалить группу?</h2>
+
+<div class="alert alert-warning">
+    <p><strong>Вы уверены, что хотите удалить группу "{{ group.name }}"?</strong></p>
+    <p>Это действие нельзя отменить. Ученики не будут удалены, только группа.</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+        <button type="submit" class="btn btn-danger">Да, удалить</button>
+        <a href="{% url 'group_detail' group.pk %}" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}
+

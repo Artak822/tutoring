@@ -39,11 +39,11 @@
     {% csrf_token %}
     
     <div class="form-group">
-        <label class="form-label" for="{{ form.students.id_for_label }}">{{ form.students.label }} *</label>
+        <label class="form-label">{{ form.students.label }} *</label>
         {{ form.students }}
         {{ form.students.errors }}
-        <div style="margin-top: 5px; font-size: 12px; color: var(--text-secondary);">
-            Удерживайте Ctrl (Cmd на Mac) для выбора нескольких учеников
+        <div style="font-size: 13px; color: var(--text-secondary); margin-top: 10px;">
+            💡 <strong>Совет:</strong> Кликните на заголовок группы, чтобы выбрать всех учеников. Кликните на отдельного ученика, чтобы выбрать только его.
         </div>
     </div>
     
