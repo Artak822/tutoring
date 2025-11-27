@@ -30,7 +30,7 @@
 
 {% block content %}
 <div style="margin-bottom: 30px;">
-    <a href="{% url 'lesson_list' %}" class="btn btn-secondary">← Назад к списку</a>
+    <a href="{% url 'calendar' %}" class="btn btn-secondary">← Назад к календарю</a>
 </div>
 
 <h2 style="margin-bottom: 30px; font-weight: 400; font-size: 24px;">{{ title }}</h2>
@@ -88,7 +88,7 @@
     
     <div class="form-actions">
         <button type="submit" class="btn">Сохранить</button>
-        <a href="{% if lesson %}{% url 'lesson_detail' lesson.pk %}{% else %}{% url 'lesson_list' %}{% endif %}" class="btn btn-secondary">Отмена</a>
+        <a href="{% if lesson %}{% url 'lesson_detail' lesson.pk %}{% else %}{% url 'calendar' %}{% endif %}" class="btn btn-secondary">Отмена</a>
     </div>
 </form>
 {% endblock %}

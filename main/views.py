@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from calendar import monthrange
 from decimal import Decimal
 from .models import Student, Lesson, Attendance, Payment, Tutor
-from .forms import StudentForm, LessonForm, AttendanceForm, PaymentForm, TutorRegistrationForm, ClearAllDebtsForm
+from .forms import StudentForm, LessonForm, AttendanceForm, PaymentForm, TutorRegistrationForm, ClearAllDebtsForm, RecurringLessonForm
 
 
 def get_tutor(request):
@@ -429,6 +429,10 @@ def lesson_create(request):
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
         return redirect('dashboard')
+    
+    # Получаем дату из GET параметра, если есть
+    initial_date = request.GET.get('date', None)
+    
     if request.method == 'POST':
         form = LessonForm(request.POST, tutor=tutor)
         if form.is_valid():
@@ -439,7 +443,7 @@ def lesson_create(request):
             messages.success(request, f'Занятие успешно создано.')
             return redirect('lesson_detail', pk=lesson.pk)
     else:
-        form = LessonForm(tutor=tutor)
+        form = LessonForm(tutor=tutor, initial_date=initial_date)
     return render(request, 'main/lesson_form.html', {
         'form': form,
         'title': 'Создать занятие'
@@ -705,6 +709,97 @@ def students_debt_list(request):
     return render(request, 'main/students_debt_list.html', {
         'students_with_debts': students_with_debts,
         'total_debts': total_debts,
+    })
+
+
+@login_required
+def recurring_lesson_create(request):
+    """Создание повторяющихся занятий"""
+    tutor = get_tutor(request)
+    if not tutor:
+        messages.error(request, 'Профиль репетитора не найден.')
+        return redirect('dashboard')
+    
+    # Получаем день недели из GET параметра (0=Пн, 6=Вс)
+    weekday_str = request.GET.get('weekday', None)
+    initial_date = None
+    
+    if weekday_str:
+        try:
+            target_weekday = int(weekday_str)  # 0=Пн, 6=Вс
+            today = timezone.now().date()
+            current_weekday = today.weekday()
+            
+            # Вычисляем, сколько дней до следующего вхождения этого дня недели
+            days_ahead = target_weekday - current_weekday
+            if days_ahead < 0:  # Целевой день уже прошел на этой неделе
+                days_ahead += 7
+            # Если days_ahead == 0, это сегодняшний день - используем сегодня
+            initial_date = today + timedelta(days=days_ahead)
+        except (ValueError, TypeError):
+            initial_date = timezone.now().date()
+    else:
+        initial_date = timezone.now().date()
+    
+    if request.method == 'POST':
+        form = RecurringLessonForm(request.POST, tutor=tutor)
+        if form.is_valid():
+            # Получаем данные из формы
+            students = form.cleaned_data['students']
+            start_date = form.cleaned_data['start_date']
+            time = form.cleaned_data['time']
+            duration = form.cleaned_data['duration']
+            lesson_price = form.cleaned_data['lesson_price']
+            period = form.cleaned_data['period']
+            notes = form.cleaned_data['notes']
+            
+            # Вычисляем конечную дату в зависимости от периода
+            if period == '2weeks':
+                end_date = start_date + timedelta(weeks=2)
+            elif period == '1month':
+                end_date = start_date + timedelta(days=30)
+            elif period == '3months':
+                end_date = start_date + timedelta(days=90)
+            elif period == '6months':
+                end_date = start_date + timedelta(days=180)
+            elif period == '1year':
+                end_date = start_date + timedelta(days=365)
+            else:
+                end_date = start_date + timedelta(days=30)
+            
+            # Создаем занятия каждую неделю в тот же день недели
+            current_date = start_date
+            lessons_created = 0
+            
+            while current_date <= end_date:
+                lesson = Lesson.objects.create(
+                    tutor=tutor,
+                    date=current_date,
+                    time=time,
+                    duration=duration,
+                    lesson_price=lesson_price,
+                    subject='',
+                    notes=notes
+                )
+                lesson.students.set(students)
+                lessons_created += 1
+                
+                # Переходим к следующей неделе (тот же день недели)
+                current_date += timedelta(weeks=1)
+            
+            messages.success(request, f'Создано {lessons_created} занятий на период "{dict(form.fields["period"].choices)[period]}".')
+            return redirect('calendar')
+    else:
+        form = RecurringLessonForm(tutor=tutor, initial_date=initial_date)
+    
+    # Определяем название дня недели для отображения
+    weekday_names = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+    weekday_name = weekday_names[initial_date.weekday()] if initial_date else ''
+    
+    return render(request, 'main/recurring_lesson_form.html', {
+        'form': form,
+        'title': f'Повторяющиеся занятия - {weekday_name}',
+        'weekday_name': weekday_name
     })
 
 

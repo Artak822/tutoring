@@ -163,6 +163,7 @@ class LessonForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         tutor = kwargs.pop('tutor', None)
+        initial_date = kwargs.pop('initial_date', None)
         super().__init__(*args, **kwargs)
         # Показываем только активных учеников репетитора
         if tutor:
@@ -174,6 +175,13 @@ class LessonForm(forms.ModelForm):
         # Устанавливаем значение по умолчанию для стоимости только для новых занятий
         if not self.instance.pk and not self.fields['lesson_price'].initial:
             self.fields['lesson_price'].initial = 500
+        
+        # Устанавливаем начальную дату, если передана
+        if initial_date and not self.instance.pk:
+            self.fields['date'].initial = initial_date
+        elif not self.instance.pk:
+            # Если дата не передана, используем сегодняшнюю
+            self.fields['date'].initial = timezone.now().date()
 
 
 class AttendanceForm(forms.ModelForm):
@@ -243,6 +251,96 @@ class PaymentForm(forms.ModelForm):
             self.fields['payment_date'].initial = timezone.now().date()
 
 
+class RecurringLessonForm(forms.Form):
+    """Форма для создания повторяющихся занятий"""
+    PERIOD_CHOICES = [
+        ('2weeks', '2 недели'),
+        ('1month', '1 месяц'),
+        ('3months', '3 месяца'),
+        ('6months', '6 месяцев'),
+        ('1year', '1 год'),
+    ]
+    
+    students = forms.ModelMultipleChoiceField(
+        queryset=Student.objects.none(),
+        widget=forms.SelectMultiple(attrs={
+            'class': 'form-select',
+            'size': '8'
+        }),
+        label='Ученики',
+        required=True
+    )
+    start_date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'class': 'form-input',
+            'type': 'date'
+        }),
+        label='Начальная дата'
+    )
+    time = forms.TimeField(
+        widget=forms.TimeInput(attrs={
+            'class': 'form-input',
+            'type': 'time'
+        }),
+        label='Время'
+    )
+    duration = forms.IntegerField(
+        widget=forms.NumberInput(attrs={
+            'class': 'form-input',
+            'min': '1',
+            'placeholder': '60'
+        }),
+        label='Длительность (минуты)',
+        initial=60
+    )
+    lesson_price = forms.DecimalField(
+        widget=forms.NumberInput(attrs={
+            'class': 'form-input',
+            'min': '0',
+            'step': '0.01',
+            'placeholder': '500'
+        }),
+        label='Стоимость занятия (за одного ученика)',
+        initial=500
+    )
+    period = forms.ChoiceField(
+        choices=PERIOD_CHOICES,
+        widget=forms.RadioSelect(attrs={
+            'class': 'form-radio'
+        }),
+        label='Период повторения',
+        initial='1month'
+    )
+    notes = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-textarea',
+            'rows': 3,
+            'placeholder': 'Дополнительные заметки (необязательно)'
+        }),
+        label='Заметки',
+        required=False
+    )
+    
+    def __init__(self, *args, **kwargs):
+        tutor = kwargs.pop('tutor', None)
+        initial_date = kwargs.pop('initial_date', None)
+        super().__init__(*args, **kwargs)
+        
+        # Показываем только активных учеников репетитора
+        if tutor:
+            self.fields['students'].queryset = Student.objects.filter(tutor=tutor, is_active=True).order_by('last_name', 'first_name')
+        
+        # Устанавливаем начальную дату
+        if initial_date:
+            # Преобразуем дату в строку формата YYYY-MM-DD для HTML input
+            if isinstance(initial_date, str):
+                self.fields['start_date'].initial = initial_date
+            else:
+                self.fields['start_date'].initial = initial_date.strftime('%Y-%m-%d')
+        else:
+            self.fields['start_date'].initial = timezone.now().date().strftime('%Y-%m-%d')
+
+
 class ClearAllDebtsForm(forms.Form):
     """Форма для погашения всех долгов ученика"""
     payment_method = forms.ChoiceField(
@@ -258,8 +356,7 @@ class ClearAllDebtsForm(forms.Form):
             'class': 'form-input',
             'type': 'date'
         }),
-        label='Дата оплаты',
-        initial=timezone.now().date()
+        label='Дата оплаты'
     )
     notes = forms.CharField(
         widget=forms.Textarea(attrs={
@@ -270,3 +367,9 @@ class ClearAllDebtsForm(forms.Form):
         label='Заметки',
         required=False
     )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Устанавливаем сегодняшнюю дату при каждом создании формы
+        if not self.initial.get('payment_date'):
+            self.fields['payment_date'].initial = timezone.now().date()

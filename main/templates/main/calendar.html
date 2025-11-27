@@ -68,6 +68,14 @@
         color: var(--text-secondary);
         border-bottom: 2px solid var(--border-color);
         position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .calendar-table th:hover {
+        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+        color: white;
+        transform: translateY(-2px);
     }
     
     .calendar-table th:not(:last-child)::after {
@@ -89,13 +97,36 @@
         background: var(--bg-secondary);
         transition: all 0.3s ease;
         position: relative;
+        cursor: pointer;
     }
     
-    .calendar-table td:hover:not(.empty):not(.today) {
-        background: var(--bg-tertiary);
-        transform: scale(1.02);
-        z-index: 1;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    .calendar-table td:hover:not(.empty) {
+        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+        transform: translateY(-2px);
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+    }
+    
+    .calendar-table td:hover:not(.empty) .day-number {
+        color: white;
+    }
+    
+    .calendar-table td:hover:not(.empty) .lesson-item {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+    
+    .calendar-table td:hover:not(.empty) .lesson-item a {
+        color: var(--text-primary);
+    }
+    
+    .calendar-table td:hover:not(.empty) .lesson-count {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+    
+    .calendar-table td.empty {
+        cursor: default;
     }
     
     .calendar-table td.empty {
@@ -303,6 +334,52 @@
         font-weight: 500;
     }
     
+    .weekday-selector {
+        display: none;
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+    }
+    
+    .weekday-selector-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+        text-align: center;
+    }
+    
+    .weekday-buttons {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 8px;
+    }
+    
+    .weekday-btn {
+        padding: 12px 6px;
+        background: var(--bg-tertiary);
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .weekday-btn:hover {
+        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+        color: white;
+        border-color: var(--btn-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+    
     @media (max-width: 768px) {
         .calendar-header {
             flex-direction: column;
@@ -340,6 +417,11 @@
         .calendar-week-header {
             display: block;
         }
+        
+        /* Показываем селектор дней недели на мобильных */
+        .weekday-selector {
+            display: block;
+        }
     }
     
     @media (max-width: 480px) {
@@ -365,20 +447,20 @@
         <h2 class="calendar-title">{{ month_name }} {{ year }}</h2>
         <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-secondary calendar-nav-btn">→</a>
     </div>
-    <a href="{% url 'lesson_list' %}" class="btn">Все занятия</a>
+    <a href="{% url 'lesson_create' %}" class="btn">+ Создать занятие</a>
 </div>
 
 <!-- Десктопная версия -->
 <table class="calendar-table">
     <thead>
         <tr>
-            <th>Пн</th>
-            <th>Вт</th>
-            <th>Ср</th>
-            <th>Чт</th>
-            <th>Пт</th>
-            <th>Сб</th>
-            <th>Вс</th>
+            <th onclick="window.location.href='{% url 'recurring_lesson_create' %}?weekday=0'" title="Создать повторяющиеся занятия каждый понедельник">Пн</th>
+            <th onclick="window.location.href='{% url 'recurring_lesson_create' %}?weekday=1'" title="Создать повторяющиеся занятия каждый вторник">Вт</th>
+            <th onclick="window.location.href='{% url 'recurring_lesson_create' %}?weekday=2'" title="Создать повторяющиеся занятия каждую среду">Ср</th>
+            <th onclick="window.location.href='{% url 'recurring_lesson_create' %}?weekday=3'" title="Создать повторяющиеся занятия каждый четверг">Чт</th>
+            <th onclick="window.location.href='{% url 'recurring_lesson_create' %}?weekday=4'" title="Создать повторяющиеся занятия каждую пятницу">Пт</th>
+            <th onclick="window.location.href='{% url 'recurring_lesson_create' %}?weekday=5'" title="Создать повторяющиеся занятия каждую субботу">Сб</th>
+            <th onclick="window.location.href='{% url 'recurring_lesson_create' %}?weekday=6'" title="Создать повторяющиеся занятия каждое воскресенье">Вс</th>
         </tr>
     </thead>
     <tbody>
@@ -387,17 +469,17 @@
             {% for day in week %}
             {% if day %}
                 {% if day.date|date:"Y-m-d" == today|date:"Y-m-d" %}
-                <td class="today">
+                <td class="today" onclick="window.location.href='{% url 'lesson_create' %}?date={{ day.date|date:'Y-m-d' }}'">
                 {% else %}
-                <td>
+                <td onclick="window.location.href='{% url 'lesson_create' %}?date={{ day.date|date:'Y-m-d' }}'">
                 {% endif %}
                     <div class="day-number {% if day.date|date:"Y-m-d" == today|date:"Y-m-d" %}today{% endif %}">
                         {{ day.date.day }}
                     </div>
                     {% if day.lessons %}
                         {% for lesson in day.lessons|slice:":3" %}
-                        <div class="lesson-item">
-                            <a href="{% url 'lesson_detail' lesson.pk %}">
+                        <div class="lesson-item" onclick="event.stopPropagation(); window.location.href='{% url 'lesson_detail' lesson.pk %}'">
+                            <a href="{% url 'lesson_detail' lesson.pk %}" onclick="event.stopPropagation();">
                                 {{ lesson.time|time:"H:i" }} - 
                                 {% for student in lesson.students.all|slice:":2" %}
                                     {{ student.last_name }}{% if not forloop.last %}, {% endif %}
@@ -421,6 +503,19 @@
 </table>
 
 <!-- Мобильная версия - недельный вид -->
+<div class="weekday-selector">
+    <div class="weekday-selector-title">🔄 Создать повторяющиеся занятия</div>
+    <div class="weekday-buttons">
+        <a href="{% url 'recurring_lesson_create' %}?weekday=0" class="weekday-btn">Пн</a>
+        <a href="{% url 'recurring_lesson_create' %}?weekday=1" class="weekday-btn">Вт</a>
+        <a href="{% url 'recurring_lesson_create' %}?weekday=2" class="weekday-btn">Ср</a>
+        <a href="{% url 'recurring_lesson_create' %}?weekday=3" class="weekday-btn">Чт</a>
+        <a href="{% url 'recurring_lesson_create' %}?weekday=4" class="weekday-btn">Пт</a>
+        <a href="{% url 'recurring_lesson_create' %}?weekday=5" class="weekday-btn">Сб</a>
+        <a href="{% url 'recurring_lesson_create' %}?weekday=6" class="weekday-btn">Вс</a>
+    </div>
+</div>
+
 <div class="calendar-week-header">
     <div class="calendar-week-nav">
         <a href="?year={{ prev_week_year }}&month={{ prev_week_month }}&week_offset={{ prev_week_offset }}" class="btn btn-secondary calendar-week-nav-btn">←</a>
@@ -453,6 +548,7 @@
                         {{ day.weekday_name }}
                     </div>
                 </div>
+                <a href="{% url 'lesson_create' %}?date={{ day.date|date:'Y-m-d' }}" class="btn" style="font-size: 12px; padding: 6px 12px;">+ Добавить</a>
             </div>
             {% if day.lessons %}
                 {% for lesson in day.lessons %}
