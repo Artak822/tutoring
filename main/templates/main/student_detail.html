@@ -22,6 +22,12 @@
     </div>
 </div>
 
+{% if student.prepaid_balance > 0 %}
+<div class="alert alert-info" style="margin-top: 15px;">
+    <strong>Баланс предоплаты:</strong> {{ student.prepaid_balance }} руб. Следующее занятие будет списано автоматически.
+</div>
+{% endif %}
+
 <div class="detail-item">
     <div class="detail-label">Имя</div>
     <div class="detail-value">{{ student.first_name }}</div>
@@ -100,6 +106,10 @@
             <div class="stat-label" style="font-size: 12px;">Всего оплачено</div>
             <div class="stat-value" style="font-size: 24px;">{{ total_paid }} руб.</div>
         </div>
+        <div class="stat-card stat-card-blue">
+            <div class="stat-label" style="font-size: 12px;">Предоплата</div>
+            <div class="stat-value" style="font-size: 24px;">{{ prepaid_balance }} руб.</div>
+        </div>
         {% if total_debt > 0 %}
         <div class="stat-card stat-card-orange">
             <div class="stat-label" style="font-size: 12px;">Долг</div>
@@ -140,7 +150,11 @@
                 </td>
                 <td>
                     {% if item.payment_status == 'paid' %}
-                        <span class="status-success">✓ Оплачено ({{ item.payment.amount }} руб.)</span>
+                        {% if item.payment_from_balance %}
+                            <span class="status-success">✓ Оплачено с предоплаты ({{ item.payment.amount }} руб.)</span>
+                        {% else %}
+                            <span class="status-success">✓ Оплачено ({{ item.payment.amount }} руб.)</span>
+                        {% endif %}
                     {% elif item.payment_status == 'unpaid' %}
                         <span class="status-warning" style="font-weight: 600;">⚠ Не оплачено ({{ item.lesson.lesson_price }} руб.)</span>
                     {% else %}

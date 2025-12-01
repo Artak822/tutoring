@@ -355,6 +355,17 @@ class PaymentForm(forms.ModelForm):
         student = kwargs.pop('student', None)
         super().__init__(*args, **kwargs)
         
+        # Скрываем способ "Списано с предоплаты" в ручной форме,
+        # но оставляем его для отображения автоплатежей
+        current_method = None
+        if self.instance and self.instance.pk:
+            current_method = self.instance.payment_method
+        choices = [
+            choice for choice in Payment.PAYMENT_METHOD_CHOICES
+            if choice[0] != 'balance' or current_method == 'balance'
+        ]
+        self.fields['payment_method'].choices = choices
+        
         # Для новых платежей устанавливаем значения по умолчанию (если еще не установлены)
         if not self.instance.pk:
             if lesson and student:

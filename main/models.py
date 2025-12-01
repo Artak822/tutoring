@@ -27,7 +27,7 @@ class Tutor(models.Model):
     
     def get_total_profit(self, start_date=None, end_date=None):
         """Общая прибыль за период"""
-        payments = Payment.objects.filter(student__tutor=self)
+        payments = Payment.objects.filter(student__tutor=self, is_balance_payment=False)
         if start_date:
             payments = payments.filter(payment_date__gte=start_date)
         if end_date:
@@ -83,6 +83,12 @@ class Student(models.Model):
     grade = models.CharField(max_length=10, blank=True, null=True, verbose_name='Класс')
     notes = models.TextField(blank=True, verbose_name='Заметки')
     is_active = models.BooleanField(default=True, verbose_name='Активен')
+    prepaid_balance = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Баланс предоплаты'
+    )
 
     class Meta:
         verbose_name = 'Ученик'
@@ -97,7 +103,8 @@ class Student(models.Model):
     
     def get_total_paid(self):
         """Общая сумма всех оплат ученика"""
-        return self.payments.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        payments = self.payments.filter(is_balance_payment=False)
+        return payments.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
     
     def get_total_debt(self):
         """Общий долг ученика (только за занятия с отметками посещаемости)"""
@@ -131,6 +138,74 @@ class Student(models.Model):
     def get_present_lessons_count(self):
         """Количество посещенных занятий"""
         return self.attendances.filter(status='present').count()
+    
+    def add_prepaid_balance(self, amount: Decimal):
+        """Пополнение баланса предоплаты"""
+        if amount <= 0:
+            return
+        self.prepaid_balance = (self.prepaid_balance or Decimal('0.00')) + amount
+        self.save(update_fields=['prepaid_balance'])
+    
+    def deduct_prepaid_balance(self, amount: Decimal):
+        """Списание средств с баланса предоплаты"""
+        if amount <= 0:
+            return
+        new_balance = (self.prepaid_balance or Decimal('0.00')) - amount
+        if new_balance < 0:
+            new_balance = Decimal('0.00')
+        self.prepaid_balance = new_balance
+        self.save(update_fields=['prepaid_balance'])
+    
+    def update_overpayment_balance(self, lesson, previous_amount: Decimal, new_amount: Decimal):
+        """Корректировка баланса при переплате за конкретное занятие"""
+        if not lesson or lesson.lesson_price is None:
+            return
+        lesson_cost = lesson.lesson_price or Decimal('0.00')
+        prev_overpay = max((previous_amount or Decimal('0.00')) - lesson_cost, Decimal('0.00'))
+        new_overpay = max((new_amount or Decimal('0.00')) - lesson_cost, Decimal('0.00'))
+        delta = new_overpay - prev_overpay
+        if delta == 0:
+            return
+        if delta > 0:
+            self.add_prepaid_balance(delta)
+        else:
+            self.deduct_prepaid_balance(abs(delta))
+    
+    def refund_balance_payment_for_lesson(self, lesson):
+        """Возвращает на баланс оплату, которая была списана автоматически"""
+        if not lesson:
+            return False
+        payment = Payment.objects.filter(
+            lesson=lesson,
+            student=self,
+            is_balance_payment=True
+        ).first()
+        if not payment:
+            return False
+        self.add_prepaid_balance(payment.amount)
+        payment.delete()
+        return True
+    
+    def try_auto_pay_lesson(self, lesson):
+        """Автоматически списывает предоплату для занятия, если средств достаточно"""
+        if not lesson or lesson.lesson_price <= 0:
+            return None
+        if self.prepaid_balance < lesson.lesson_price:
+            return None
+        existing_payment = Payment.objects.filter(lesson=lesson, student=self).first()
+        if existing_payment:
+            return None
+        payment = Payment.objects.create(
+            student=self,
+            lesson=lesson,
+            amount=lesson.lesson_price,
+            payment_date=lesson.date,
+            payment_method='balance',
+            is_balance_payment=True,
+            notes='Автоматическая оплата с предоплаты'
+        )
+        self.deduct_prepaid_balance(lesson.lesson_price)
+        return payment
 
 
 class Lesson(models.Model):
@@ -198,6 +273,7 @@ class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
         ('cash', 'Наличные'),
         ('transfer', 'Перевод'),
+        ('balance', 'Списано с предоплаты'),
     ]
     
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='payments', verbose_name='Ученик')
@@ -207,6 +283,7 @@ class Payment(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cash', verbose_name='Способ оплаты')
     notes = models.TextField(blank=True, verbose_name='Заметки')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    is_balance_payment = models.BooleanField(default=False, verbose_name='Оплата с предоплаты')
 
     class Meta:
         verbose_name = 'Оплата'
@@ -214,4 +291,5 @@ class Payment(models.Model):
         ordering = ['-payment_date', '-created_at']
 
     def __str__(self):
-        return f"{self.student} - {self.amount} руб. ({self.payment_date})"
+        method = self.get_payment_method_display()
+        return f"{self.student} - {self.amount} руб. ({self.payment_date}, {method})"

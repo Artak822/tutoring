@@ -72,6 +72,7 @@ def student_detail(request, pk):
             'attendance_status': attendance_status,
             'payment': payment,
             'payment_status': payment_status,
+            'payment_from_balance': payment.is_balance_payment if payment else False,
         })
     
     payments = Payment.objects.filter(student=student).order_by('-payment_date')[:10]
@@ -92,6 +93,7 @@ def student_detail(request, pk):
         'total_lessons': total_lessons,
         'absent_lessons': absent_lessons,
         'present_lessons': present_lessons,
+        'prepaid_balance': student.prepaid_balance,
     })
 
 
@@ -521,13 +523,20 @@ def mark_attendance(request, lesson_pk, student_pk):
                 attendance.lesson = lesson
                 attendance.student = student
                 attendance.save()
+                if attendance.status == 'present':
+                    student.try_auto_pay_lesson(lesson)
                 messages.success(request, f'Посещаемость для {student} отмечена.')
                 return redirect('lesson_detail', pk=lesson_pk)
         else:
             # Обновляем существующую
+            previous_status = attendance.status
             form = AttendanceForm(request.POST, instance=attendance)
             if form.is_valid():
-                form.save()
+                updated_attendance = form.save()
+                if updated_attendance.status == 'present':
+                    student.try_auto_pay_lesson(lesson)
+                elif previous_status == 'present' and updated_attendance.status != 'present':
+                    student.refund_balance_payment_for_lesson(lesson)
                 messages.success(request, f'Посещаемость для {student} обновлена.')
                 return redirect('lesson_detail', pk=lesson_pk)
     else:
@@ -573,15 +582,30 @@ def mark_payment(request, lesson_pk, student_pk):
     if request.method == 'POST':
         # Если есть существующая оплата, передаем instance для обновления
         if existing_payment:
+            previous_amount = existing_payment.amount
+            was_balance_payment = existing_payment.is_balance_payment
             form = PaymentForm(request.POST, instance=existing_payment, lesson=lesson, student=student)
         else:
+            previous_amount = Decimal('0.00')
+            was_balance_payment = False
             form = PaymentForm(request.POST, lesson=lesson, student=student)
         
         if form.is_valid():
             payment = form.save(commit=False)
             payment.student = student
             payment.lesson = lesson
+            payment.is_balance_payment = payment.payment_method == 'balance'
             payment.save()
+            
+            if payment.is_balance_payment:
+                # Автоматические оплаты создаются системой и не влияют на баланс дополнительно
+                pass
+            else:
+                # Если оплата ранее была списана с предоплаты, возвращаем средства
+                if was_balance_payment:
+                    student.add_prepaid_balance(lesson.lesson_price)
+                student.update_overpayment_balance(lesson, previous_amount, payment.amount)
+            
             if existing_payment:
                 messages.success(request, f'Оплата для {student} обновлена.')
             else:
