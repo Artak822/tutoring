@@ -48,7 +48,7 @@
 {% if student.telegram %}
 <div class="detail-item">
     <div class="detail-label">Телеграм</div>
-    <div class="detail-value">{{ student.telegram }}</div>
+    <div class="detail-value"><a href="tg://resolve?domain={{ student.telegram }}">{{ student.telegram }}</a></div>
 </div>
 {% endif %}
 

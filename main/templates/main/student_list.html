@@ -22,7 +22,7 @@
                 <th>Фамилия</th>
                 <!-- <th>Класс</th> -->
                 <!-- <th class="table-mobile-hide">Телефон</th> -->
-                <th class="table-mobile-hide">Телеграм</th>
+                <th>Телеграм</th>
             </tr>
         </thead>
         <tbody>
@@ -32,7 +32,7 @@
                 <td>{{ student.last_name }}</td>
                 <!-- <td>{{ student.grade|default:"—" }}</td> -->
                 <!-- <td class="table-mobile-hide">{{ student.phone|default:"—" }}</td> -->
-                <td class="table-mobile-hide"><a href="tg://resolve?domain={{ student.telegram }}" >{{ student.telegram|default:"—" }}</a></td>
+                <td>{% if student.telegram %}<a href="tg://resolve?domain={{ student.telegram }}">{{ student.telegram }}</a>{% else %}—{% endif %}</td>
             </tr>
             {% endfor %}
         </tbody>    
