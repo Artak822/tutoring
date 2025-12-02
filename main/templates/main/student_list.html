@@ -32,7 +32,7 @@
                 <td>{{ student.last_name }}</td>
                 <!-- <td>{{ student.grade|default:"—" }}</td> -->
                 <!-- <td class="table-mobile-hide">{{ student.phone|default:"—" }}</td> -->
-                <td class="table-mobile-hide"><a href="https://t.me/{{ student.telegram }}" target="_blank">{{ student.telegram|default:"—" }}</a></td>
+                <td class="table-mobile-hide"><a href="tg://resolve?domain={{ student.telegram }}" >{{ student.telegram|default:"—" }}</a></td>
             </tr>
             {% endfor %}
         </tbody>    
