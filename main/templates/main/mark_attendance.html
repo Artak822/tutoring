@@ -16,14 +16,32 @@
 <form method="post">
     {% csrf_token %}
     
-    <div class="form-group">
-        <label class="form-label form-checkbox-label" for="{{ form.status.id_for_label }}">
-            {{ form.status }}
-            <span>{{ form.status.label }} *</span>
-        </label>
+    <!-- <div class="form-group">
+        <label class="form-label">{{ form.status.label }} *</label>
+            <div class="radio-group">
+                {% for choice in form.status %}
+                    <label class="radio-option" for="{{ choice.id_for_label }}">
+                        {{ choice.tag }}
+                        <span>{{ choice.choice_label }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+            
         {{ form.status.errors }}
     </div>
-    
+     -->
+     <div class="form-group">
+        <label class="form-label">{{ form.status.label }} *</label>
+        <div class="radio-group">
+            {% for radio in form.status %}
+                <label class="radio-option" for="{{ radio.id_for_label }}">
+                    {{ radio.tag }}
+                    <span>{{ radio.choice_label }}</span>
+                </label>
+            {% endfor %}
+        </div>
+        {{ form.status.errors }}
+    </div>
     <div class="form-group">
         <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
         {{ form.notes }}

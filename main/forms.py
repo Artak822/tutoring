@@ -296,14 +296,13 @@ class LessonForm(forms.ModelForm):
 
 
 class AttendanceForm(forms.ModelForm):
-    """Форма для отметки посещаемости"""
-    
     class Meta:
         model = Attendance
         fields = ['status', 'notes']
         widgets = {
-            'status': forms.CheckboxInput(attrs={
-                'class': 'form-checkbox',
+            'status': forms.RadioSelect(attrs={
+                'class': 'form-radio',
+                'data-bind': 'checked: selectedStatus'
             }),
             'notes': forms.Textarea(attrs={
                 'class': 'form-textarea',
@@ -312,10 +311,15 @@ class AttendanceForm(forms.ModelForm):
             }),
         }
         labels = {
-            'status': 'Присутствовал',
-            'notes': 'Заметки',
+            'status': 'Посещаемость',
         }
-
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Убедитесь, что choices установлены
+        self.fields['status'].choices = Attendance.STATUS_CHOICES
+        # Добавьте класс к label для каждого варианта
+        self.fields['status'].widget.attrs.update({'class': 'form-radio'})
 
 class PaymentForm(forms.ModelForm):
     """Форма для отметки оплаты"""
