@@ -17,8 +17,10 @@
     {% csrf_token %}
     
     <div class="form-group">
-        <label class="form-label" for="{{ form.status.id_for_label }}">{{ form.status.label }} *</label>
-        {{ form.status }}
+        <label class="form-label form-checkbox-label" for="{{ form.status.id_for_label }}">
+            {{ form.status }}
+            <span>{{ form.status.label }} *</span>
+        </label>
         {{ form.status.errors }}
     </div>
     

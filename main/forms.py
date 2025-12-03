@@ -302,8 +302,8 @@ class AttendanceForm(forms.ModelForm):
         model = Attendance
         fields = ['status', 'notes']
         widgets = {
-            'status': forms.Select(attrs={
-                'class': 'form-input'
+            'status': forms.CheckboxInput(attrs={
+                'class': 'form-checkbox',
             }),
             'notes': forms.Textarea(attrs={
                 'class': 'form-textarea',
@@ -312,7 +312,7 @@ class AttendanceForm(forms.ModelForm):
             }),
         }
         labels = {
-            'status': 'Статус',
+            'status': 'Присутствовал',
             'notes': 'Заметки',
         }
 

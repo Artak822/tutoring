@@ -733,6 +733,82 @@ def dashboard(request):
 
 
 @login_required
+def profit_report(request):
+    """Отчёты по прибыли за произвольный период"""
+    tutor = get_tutor(request)
+    if not tutor:
+        messages.error(request, 'Профиль репетитора не найден.')
+        return redirect('dashboard')
+
+    today = timezone.now().date()
+    # По умолчанию показываем текущий месяц
+    default_start = today.replace(day=1)
+    default_end = today
+
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+
+    start_date = default_start
+    end_date = default_end
+
+    try:
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        if end_date_str:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        messages.warning(request, 'Неверный формат дат, использован период по умолчанию.')
+
+    # Гарантируем, что start <= end
+    if start_date > end_date:
+        start_date, end_date = end_date, start_date
+
+    payments_qs = Payment.objects.filter(
+        student__tutor=tutor,
+        is_balance_payment=False,
+        payment_date__gte=start_date,
+        payment_date__lte=end_date,
+    ).select_related('student', 'lesson').order_by('-payment_date', '-created_at')
+
+    total_profit = payments_qs.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+    # Разбивка по способам оплаты
+    profit_by_method = payments_qs.values('payment_method').annotate(total=Sum('amount')).order_by()
+
+    # Разбивка по дням
+    profit_by_day = payments_qs.values('payment_date').annotate(total=Sum('amount')).order_by('payment_date')
+
+    # Разбивка по ученикам
+    profit_by_student = payments_qs.values(
+        'student__id',
+        'student__first_name',
+        'student__last_name',
+    ).annotate(total=Sum('amount')).order_by('-total')
+
+    lessons_count = tutor.get_lessons_count(start_date=start_date, end_date=end_date)
+
+    # Средняя прибыль за занятие и за день
+    days_count = (end_date - start_date).days + 1
+    avg_per_lesson = total_profit / lessons_count if lessons_count else Decimal('0.00')
+    avg_per_day = total_profit / days_count if days_count else Decimal('0.00')
+
+    return render(request, 'main/profit_report.html', {
+        'tutor': tutor,
+        'start_date': start_date,
+        'end_date': end_date,
+        'payments': payments_qs[:200],
+        'total_profit': total_profit,
+        'profit_by_method': profit_by_method,
+        'profit_by_day': profit_by_day,
+        'profit_by_student': profit_by_student,
+        'lessons_count': lessons_count,
+        'avg_per_lesson': avg_per_lesson,
+        'avg_per_day': avg_per_day,
+        'days_count': days_count,
+    })
+
+
+@login_required
 def students_debt_list(request):
     """Полный список учеников с долгами"""
     tutor = get_tutor(request)

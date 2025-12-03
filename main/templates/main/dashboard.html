@@ -29,42 +29,37 @@
     Личный кабинет
 </h2>
 
-<div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px;">
-    <div class="stat-card stat-card-blue">
-        <div class="stat-label">Учеников</div>
-        <div class="stat-value">{{ students_count }}</div>
+<div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 40px;">
+    <div class="stat-card stat-card-blue" style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 4px; align-self: stretch; border-radius: 999px; background: linear-gradient(180deg, var(--btn-primary), var(--link-hover));"></div>
+        <div>
+            <div class="stat-label">Учеников</div>
+            <div class="stat-value">{{ students_count }}</div>
+        </div>
     </div>
     
-    <div class="stat-card stat-card-green">
-        <div class="stat-label">Прибыль (все время)</div>
-        <div class="stat-value">{{ profit_all_time }} руб.</div>
+    <div class="stat-card stat-card-blue" style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 4px; align-self: stretch; border-radius: 999px; background: linear-gradient(180deg, var(--btn-primary), var(--link-hover));"></div>
+        <div>
+            <div class="stat-label">Занятий (все время)</div>
+            <div class="stat-value">{{ lessons_all_time }}</div>
+        </div>
     </div>
     
-    <div class="stat-card stat-card-orange">
-        <div class="stat-label">Прибыль (месяц)</div>
-        <div class="stat-value">{{ profit_month }} руб.</div>
+    <div class="stat-card stat-card-orange" style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 4px; align-self: stretch; border-radius: 999px; background: linear-gradient(180deg, #e67700, #fcc419);"></div>
+        <div>
+            <div class="stat-label">Занятий (месяц)</div>
+            <div class="stat-value">{{ lessons_month }}</div>
+        </div>
     </div>
     
-    <div class="stat-card stat-card-pink">
-        <div class="stat-label">Прибыль (неделя)</div>
-        <div class="stat-value">{{ profit_week }} руб.</div>
-    </div>
-</div>
-
-<div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
-    <div class="stat-card stat-card-blue">
-        <div class="stat-label">Занятий (все время)</div>
-        <div class="stat-value">{{ lessons_all_time }}</div>
-    </div>
-    
-    <div class="stat-card stat-card-orange">
-        <div class="stat-label">Занятий (месяц)</div>
-        <div class="stat-value">{{ lessons_month }}</div>
-    </div>
-    
-    <div class="stat-card stat-card-pink">
-        <div class="stat-label">Занятий (неделя)</div>
-        <div class="stat-value">{{ lessons_week }}</div>
+    <div class="stat-card stat-card-pink" style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 4px; align-self: stretch; border-radius: 999px; background: linear-gradient(180deg, #c2255c, #ff8787);"></div>
+        <div>
+            <div class="stat-label">Занятий (неделя)</div>
+            <div class="stat-value">{{ lessons_week }}</div>
+        </div>
     </div>
 </div>
 
