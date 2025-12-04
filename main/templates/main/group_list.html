@@ -42,7 +42,13 @@
                     <td class="mobile-hide">{{ group.get_students_count }}</td>
                     <td class="mobile-hide">{{ group.description|truncatewords:10|default:"—" }}</td>
                     <td class="mobile-hide">
-                        <a href="{% url 'group_detail' group.pk %}" class="btn btn-sm btn-secondary">Подробнее</a>
+                        <a href="{% url 'group_detail' group.pk %}" class="btn btn-sm btn-secondary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            Подробнее
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -53,7 +59,13 @@
 {% else %}
 <div class="empty-state">
     <p>У вас пока нет групп</p>
-    <a href="{% url 'group_create' %}" class="btn">Создать первую группу</a>
+    <a href="{% url 'group_create' %}" class="btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Создать первую группу
+    </a>
 </div>
 {% endif %}
 

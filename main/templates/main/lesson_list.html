@@ -42,7 +42,13 @@
                 </td>
                 <td>{{ lesson.lesson_price|floatformat:0 }} ₽</td>
                 <td>
-                    <a href="{% url 'lesson_detail' lesson.pk %}" class="btn btn-sm btn-secondary">Подробнее</a>
+                    <a href="{% url 'lesson_detail' lesson.pk %}" class="btn btn-sm btn-secondary">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        Подробнее
+                    </a>
                 </td>
             </tr>
             {% endfor %}
@@ -52,7 +58,13 @@
 {% else %}
 <div class="empty-state">
     <p>У вас пока нет занятий</p>
-    <a href="{% url 'lesson_create' %}" class="btn">Создать первое занятие</a>
+    <a href="{% url 'lesson_create' %}" class="btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Создать первое занятие
+    </a>
 </div>
 {% endif %}
 {% endblock %}

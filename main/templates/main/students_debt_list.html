@@ -34,8 +34,20 @@
                 </td>
                 <td style="color: var(--danger); font-weight: 600; font-size: 18px;">{{ item.debt|floatformat:0 }} ₽</td>
                 <td>
-                    <a href="{% url 'student_detail' item.student.pk %}" class="btn btn-sm">Подробнее</a>
-                    <a href="{% url 'clear_all_debts' item.student.pk %}" class="btn btn-sm" style="background: var(--success);">Погасить</a>
+                    <a href="{% url 'student_detail' item.student.pk %}" class="btn btn-sm">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        Подробнее
+                    </a>
+                    <a href="{% url 'clear_all_debts' item.student.pk %}" class="btn btn-sm" style="background: var(--success);">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Погасить
+                    </a>
                 </td>
             </tr>
             {% endfor %}
@@ -45,7 +57,12 @@
 {% else %}
 <div class="empty-state">
     <p>Нет учеников с долгами</p>
-    <a href="{% url 'student_list' %}" class="btn">К списку учеников</a>
+    <a href="{% url 'student_list' %}" class="btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        К списку учеников
+    </a>
 </div>
 {% endif %}
 {% endblock %}
