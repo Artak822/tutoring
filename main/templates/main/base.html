@@ -12,10 +12,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png?v=2">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png?v=2">
 
-    <!-- Web App Manifest -->
-    <link rel="manifest" href="static/icons/site.webmanifest">
-    <meta name="theme-color" content="#ffffff">
-
     <!-- Main stylesheet -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
         
@@ -760,12 +756,33 @@
         h2 {
             font-size: 18px !important;
             font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        /* Отступ для заголовков после кнопок "Назад" */
+        .btn + h2,
+        .btn-secondary + h2 {
+            margin-top: 20px;
+        }
+        
+        /* Отступы для текста после заголовков */
+        h2 + p,
+        h2 + div {
+            margin-top: 10px;
+        }
+        
+        /* Отступы для элементов после кнопок */
+        .btn + p,
+        .btn-secondary + p {
+            margin-top: 15px;
         }
         
         .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 20px;
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 2px solid var(--border-color);
@@ -779,6 +796,13 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
         }
             
             .detail-value {
@@ -1080,7 +1104,9 @@
         height: 100%;
         width: 280px;
         padding: 20px;
-        transition: transform 0.3s ease;
+        opacity: 0;
+        visibility: hidden;
+        transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
         z-index: 200;
     }
     
@@ -1092,7 +1118,8 @@
     }
     
     .sidebar-overlay {
-        display: none;
+        opacity: 0;
+        visibility: hidden;
         position: fixed;
         top: 0;
         left: 0;
@@ -1100,10 +1127,12 @@
         bottom: 0;
         background: rgba(0, 0, 0, 0.5);
         z-index: 199;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
     }
     
     .sidebar-overlay.active {
-        display: block;
+        opacity: 1;
+        visibility: visible;
     }
     
     .main-shell {

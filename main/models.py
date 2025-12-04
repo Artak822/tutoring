@@ -206,6 +206,58 @@ class Student(models.Model):
         )
         self.deduct_prepaid_balance(lesson.lesson_price)
         return payment
+    
+    def auto_pay_debt_from_prepaid(self):
+        """Автоматически погашает долг с предоплаты (старые долги в первую очередь)"""
+        if self.prepaid_balance <= 0:
+            return []
+        
+        # Находим все занятия с долгом (присутствовал, но не оплатил)
+        unpaid_lessons = []
+        for lesson in self.lessons.all():
+            # Проверяем, что у занятия есть хотя бы одна отметка посещаемости
+            if not lesson.attendances.exists():
+                continue
+            
+            # Проверяем, присутствовал ли ученик на занятии
+            attendance = Attendance.objects.filter(lesson=lesson, student=self, status='present').first()
+            if attendance:
+                # Проверяем, оплатил ли он это занятие
+                payment = Payment.objects.filter(lesson=lesson, student=self).first()
+                if not payment and lesson.lesson_price > 0:
+                    unpaid_lessons.append(lesson)
+        
+        # Сортируем по дате (старые долги в первую очередь)
+        unpaid_lessons.sort(key=lambda l: (l.date, l.time))
+        
+        # Погашаем долги, пока есть средства на предоплате
+        paid_lessons = []
+        remaining_balance = self.prepaid_balance
+        
+        for lesson in unpaid_lessons:
+            if remaining_balance >= lesson.lesson_price:
+                # Создаем платеж с предоплаты
+                payment = Payment.objects.create(
+                    student=self,
+                    lesson=lesson,
+                    amount=lesson.lesson_price,
+                    payment_date=lesson.date,
+                    payment_method='balance',
+                    is_balance_payment=True,
+                    notes='Автоматическое погашение долга с предоплаты'
+                )
+                remaining_balance -= lesson.lesson_price
+                paid_lessons.append(lesson)
+            else:
+                # Недостаточно средств для полного погашения этого долга
+                break
+        
+        # Обновляем баланс предоплаты
+        if paid_lessons:
+            total_deducted = sum(lesson.lesson_price for lesson in paid_lessons)
+            self.deduct_prepaid_balance(total_deducted)
+        
+        return paid_lessons
 
 
 class Lesson(models.Model):

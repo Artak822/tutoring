@@ -605,6 +605,14 @@ def mark_payment(request, lesson_pk, student_pk):
                 if was_balance_payment:
                     student.add_prepaid_balance(lesson.lesson_price)
                 student.update_overpayment_balance(lesson, previous_amount, payment.amount)
+                
+                # Автоматически погашаем долг с предоплаты, если есть средства
+                paid_lessons = student.auto_pay_debt_from_prepaid()
+                if paid_lessons:
+                    lessons_count = len(paid_lessons)
+                    total_amount = sum(lesson.lesson_price for lesson in paid_lessons)
+                    messages.info(request, 
+                        f'Автоматически погашено {lessons_count} долг(ов) на сумму {total_amount} руб. с предоплаты.')
             
             if existing_payment:
                 messages.success(request, f'Оплата для {student} обновлена.')
