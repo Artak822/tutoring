@@ -18,32 +18,37 @@
 
 {% if groups %}
 <div class="card">
-    <table>
-        <thead>
-            <tr>
-                <th>Название</th>
-                <th>Учеников</th>
-                <th>Описание</th>
-                <th>Действия</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for group in groups %}
-            <tr>
-                <td>
-                    <a href="{% url 'group_detail' group.pk %}" style="font-weight: 600; color: var(--text); text-decoration: none;">
-                        {{ group.name }}
-                    </a>
-                </td>
-                <td>{{ group.get_students_count }}</td>
-                <td>{{ group.description|truncatewords:10|default:"—" }}</td>
-                <td>
-                    <a href="{% url 'group_detail' group.pk %}" class="btn btn-sm btn-secondary">Подробнее</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th class="mobile-hide">Учеников</th>
+                    <th class="mobile-hide">Описание</th>
+                    <th class="mobile-hide">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in groups %}
+                <tr>
+                    <td>
+                        <a href="{% url 'group_detail' group.pk %}" style="font-weight: 600; color: var(--text); text-decoration: none;">
+                            {{ group.name }}
+                        </a>
+                        <div class="mobile-only" style="margin-top: 4px; font-size: 13px; color: var(--text-secondary);">
+                            Учеников: {{ group.get_students_count }}
+                        </div>
+                    </td>
+                    <td class="mobile-hide">{{ group.get_students_count }}</td>
+                    <td class="mobile-hide">{{ group.description|truncatewords:10|default:"—" }}</td>
+                    <td class="mobile-hide">
+                        <a href="{% url 'group_detail' group.pk %}" class="btn btn-sm btn-secondary">Подробнее</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% else %}
 <div class="empty-state">
@@ -51,5 +56,37 @@
     <a href="{% url 'group_create' %}" class="btn">Создать первую группу</a>
 </div>
 {% endif %}
-{% endblock %}
 
+<style>
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-hide {
+        display: none;
+    }
+    
+    .mobile-only {
+        display: block;
+    }
+    
+    table {
+        font-size: 14px;
+    }
+    
+    table td {
+        padding: 12px 8px;
+    }
+    
+    table th {
+        padding: 10px 8px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+</style>
+{% endblock %}

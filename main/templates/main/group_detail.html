@@ -34,45 +34,108 @@
         <h3 class="card-title">Ученики ({{ students.count }})</h3>
     </div>
     {% if students %}
-    <table>
-        <thead>
-            <tr>
-                <th>Имя</th>
-                <th>Телефон</th>
-                <th>Класс</th>
-                <th>Долг</th>
-                <th>Действия</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for student in students %}
-            <tr>
-                <td>
-                    <a href="{% url 'student_detail' student.pk %}" style="font-weight: 600; color: var(--text); text-decoration: none;">
-                        {{ student.last_name }} {{ student.first_name }}
-                    </a>
-                </td>
-                <td>{{ student.phone|default:"—" }}</td>
-                <td>{{ student.grade|default:"—" }}</td>
-                <td>
-                    {% with debt=student.get_total_debt %}
-                        {% if debt > 0 %}
-                            <span style="color: var(--danger); font-weight: 600;">{{ debt|floatformat:0 }} ₽</span>
-                        {% else %}
-                            <span style="color: var(--text-muted);">0 ₽</span>
-                        {% endif %}
-                    {% endwith %}
-                </td>
-                <td>
-                    <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-secondary">Подробнее</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Имя</th>
+                    <th class="mobile-hide">Телефон</th>
+                    <th class="mobile-hide">Класс</th>
+                    <th class="mobile-hide">Долг</th>
+                    <th class="mobile-hide">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>
+                        <div class="student-name-mobile">
+                            <a href="{% url 'student_detail' student.pk %}" class="student-link">
+                                {{ student.last_name }} {{ student.first_name }}
+                            </a>
+                            {% if student.telegram %}
+                                <a href="tg://resolve?domain={{ student.telegram|cut:'@' }}" target="_blank" class="telegram-link" title="Telegram">
+                                    @{{ student.telegram|cut:'@' }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="mobile-hide">{{ student.phone|default:"—" }}</td>
+                    <td class="mobile-hide">{{ student.grade|default:"—" }}</td>
+                    <td class="mobile-hide">
+                        {% with debt=student.get_total_debt %}
+                            {% if debt > 0 %}
+                                <span style="color: var(--danger); font-weight: 600;">{{ debt|floatformat:0 }} ₽</span>
+                            {% else %}
+                                <span style="color: var(--text-muted);">0 ₽</span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td class="mobile-hide">
+                        <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-secondary">Подробнее</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
     <p style="text-align: center; color: var(--text-secondary); padding: 32px;">В группе нет учеников</p>
     {% endif %}
 </div>
-{% endblock %}
 
+<style>
+.student-name-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.student-link {
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.telegram-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.telegram-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .mobile-hide {
+        display: none;
+    }
+    
+    .student-name-mobile {
+        width: 100%;
+    }
+    
+    table {
+        font-size: 14px;
+    }
+    
+    table td {
+        padding: 12px 8px;
+    }
+    
+    table th {
+        padding: 10px 8px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+</style>
+{% endblock %}

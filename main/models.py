@@ -206,7 +206,7 @@ class Student(models.Model):
         )
         self.deduct_prepaid_balance(lesson.lesson_price)
         return payment
-    
+
     def auto_pay_debt_from_prepaid(self):
         """Автоматически погашает долг с предоплаты (старые долги в первую очередь)"""
         if self.prepaid_balance <= 0:
