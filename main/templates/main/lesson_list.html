@@ -1,27 +1,31 @@
 {% extends 'main/base.html' %}
 
-{% block title %}Список занятий{% endblock %}
+{% block title %}Занятия{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h2 style="font-weight: 400; font-size: 20px; margin: 0;">Список занятий</h2>
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <a href="{% url 'lesson_create' %}" class="btn">+ Создать занятие</a>
-        <a href="{% url 'calendar' %}" class="btn btn-secondary">Календарь</a>
+    <h1>Занятия</h1>
+    <div class="page-actions">
+        <a href="{% url 'lesson_create' %}" class="btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Создать занятие
+        </a>
     </div>
 </div>
 
 {% if lessons %}
-    <div class="table-responsive">
+<div class="card">
     <table>
         <thead>
             <tr>
                 <th>Дата</th>
                 <th>Время</th>
                 <th>Ученики</th>
-                <th class="table-mobile-hide">Предмет</th>
-                <th>Посещаемость</th>
-                <th class="table-mobile-hide">Оплата</th>
+                <th>Стоимость</th>
+                <th>Действия</th>
             </tr>
         </thead>
         <tbody>
@@ -31,52 +35,25 @@
                 <td>{{ lesson.time|time:"H:i" }}</td>
                 <td>
                     {% for student in lesson.students.all %}
-                        <a href="{% url 'student_detail' student.pk %}">{{ student }}</a>{% if not forloop.last %}, {% endif %}
+                        <a href="{% url 'student_detail' student.pk %}" style="color: var(--primary); text-decoration: none;">
+                            {{ student.last_name }} {{ student.first_name }}
+                        </a>{% if not forloop.last %}, {% endif %}
                     {% endfor %}
                 </td>
-                <td class="table-mobile-hide">{{ lesson.subject|default:"—" }}</td>
+                <td>{{ lesson.lesson_price|floatformat:0 }} ₽</td>
                 <td>
-                    {% with attendances=lesson.attendances.all %}
-                        {% if attendances %}
-                            {% for attendance in attendances %}
-                                <div style="font-size: 12px;">
-                                    {{ attendance.student.first_name }}: 
-                                    {% if attendance.status == 'present' %}
-                                        <span class="status-success">✓</span>
-                                    {% else %}
-                                        <span class="status-error">✗</span>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <span style="color: var(--text-muted);">Не отмечено</span>
-                        {% endif %}
-                    {% endwith %}
+                    <a href="{% url 'lesson_detail' lesson.pk %}" class="btn btn-sm btn-secondary">Подробнее</a>
                 </td>
-                <td class="table-mobile-hide">
-                    {% with payments=lesson.payments.all %}
-                        {% if payments %}
-                            {% for payment in payments %}
-                                <div style="font-size: 12px;">
-                                    {{ payment.student.first_name }}: 
-                                    <span class="status-success">{{ payment.amount }} руб.</span>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <span style="color: var(--text-muted);">Не оплачено</span>
-                        {% endif %}
-                    {% endwith %}
-                </td>
-                <td><a href="{% url 'lesson_detail' lesson.pk %}">Подробнее</a></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    </div>
+</div>
 {% else %}
-    <div class="empty-state">
-        <p>Пока нет занятий</p>
-    </div>
+<div class="empty-state">
+    <p>У вас пока нет занятий</p>
+    <a href="{% url 'lesson_create' %}" class="btn">Создать первое занятие</a>
+</div>
 {% endif %}
 {% endblock %}
 

@@ -2,219 +2,72 @@
 
 {% block title %}{{ title }}{% endblock %}
 
-{% block extra_css %}
-<style>
-    .period-options {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin: 20px 0;
-    }
-    
-    .radio-option {
-        display: flex;
-        align-items: center;
-        padding: 15px;
-        background: var(--bg-tertiary);
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: 2px solid transparent;
-    }
-    
-    .radio-option:hover {
-        background: var(--bg-primary);
-        border-color: var(--btn-primary);
-    }
-    
-    .radio-option input[type="radio"] {
-        margin-right: 10px;
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-    }
-    
-    .radio-option input[type="radio"]:checked + label {
-        font-weight: 600;
-        color: var(--btn-primary);
-    }
-    
-    .radio-option label {
-        cursor: pointer;
-        margin: 0;
-        font-size: 16px;
-        flex-grow: 1;
-    }
-    
-    .info-box {
-        background: linear-gradient(135deg, var(--stat-blue-bg) 0%, rgba(77, 166, 255, 0.1) 100%);
-        border-left: 4px solid var(--btn-primary);
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 30px;
-    }
-    
-    .info-box h4 {
-        margin: 0 0 10px 0;
-        color: var(--btn-primary);
-        font-size: 16px;
-        font-weight: 600;
-    }
-    
-    .info-box p {
-        margin: 0;
-        color: var(--text-secondary);
-        font-size: 14px;
-        line-height: 1.6;
-    }
-    
-    @media (max-width: 768px) {
-        .period-options {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div style="margin-bottom: 30px;">
-    <a href="{% url 'calendar' %}" class="btn btn-secondary">← Назад к календарю</a>
-</div>
-
-<h2 style="margin-bottom: 30px; font-weight: 400; font-size: 24px;">
-    {{ title }}
-</h2>
-
-<div class="info-box">
-    <h4>📅 Повторяющиеся занятия - каждый {{ weekday_name }}</h4>
-    <p>Вы выбрали день недели <strong>{{ weekday_name }}</strong>. Система автоматически создаст занятия каждую неделю в этот день на выбранный период.</p>
-    <p style="margin-top: 10px;">
-        📌 Начальная дата рассчитана от сегодняшнего дня: если выбранный день уже прошел на этой неделе, занятия начнутся со следующей недели.
-    </p>
+<div class="page-header">
+    <h1>{{ title }}</h1>
+    <div class="page-actions">
+        <a href="{% url 'calendar' %}" class="btn btn-secondary">Отмена</a>
+    </div>
 </div>
 
 <form method="post">
     {% csrf_token %}
     
     <div class="form-group">
-        <label class="form-label">{{ form.students.label }} *</label>
+        <label class="form-label" for="{{ form.students.id_for_label }}">{{ form.students.label }}</label>
         {{ form.students }}
-        {% if form.students.errors %}
-            <ul class="errorlist">
-                {% for error in form.students.errors %}
-                <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-        <div style="font-size: 13px; color: var(--text-secondary); margin-top: 10px;">
-            💡 <strong>Совет:</strong> Кликните на заголовок группы, чтобы выбрать всех учеников. Кликните на отдельного ученика, чтобы выбрать только его.
-        </div>
+        {{ form.students.errors }}
     </div>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
         <div class="form-group">
             <label class="form-label" for="{{ form.start_date.id_for_label }}">{{ form.start_date.label }}</label>
             {{ form.start_date }}
-            {% if form.start_date.errors %}
-                <ul class="errorlist">
-                    {% for error in form.start_date.errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+            {{ form.start_date.errors }}
         </div>
-        
+
         <div class="form-group">
             <label class="form-label" for="{{ form.time.id_for_label }}">{{ form.time.label }}</label>
             {{ form.time }}
-            {% if form.time.errors %}
-                <ul class="errorlist">
-                    {% for error in form.time.errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+            {{ form.time.errors }}
         </div>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+
         <div class="form-group">
             <label class="form-label" for="{{ form.duration.id_for_label }}">{{ form.duration.label }}</label>
             {{ form.duration }}
-            {% if form.duration.errors %}
-                <ul class="errorlist">
-                    {% for error in form.duration.errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+            {{ form.duration.errors }}
         </div>
-        
+
         <div class="form-group">
             <label class="form-label" for="{{ form.lesson_price.id_for_label }}">{{ form.lesson_price.label }}</label>
             {{ form.lesson_price }}
-            {% if form.lesson_price.errors %}
-                <ul class="errorlist">
-                    {% for error in form.lesson_price.errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+            {{ form.lesson_price.errors }}
         </div>
     </div>
-    
+
     <div class="form-group">
         <label class="form-label">{{ form.period.label }}</label>
-        <div class="period-options">
+        <div class="radio-group">
             {% for choice in form.period %}
-            <div class="radio-option">
-                {{ choice.tag }}
-                <label for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
-            </div>
+                <label class="radio-option" for="{{ choice.id_for_label }}">
+                    {{ choice.tag }}
+                    <span>{{ choice.choice_label }}</span>
+                </label>
             {% endfor %}
         </div>
-        {% if form.period.errors %}
-            <ul class="errorlist">
-                {% for error in form.period.errors %}
-                <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+        {{ form.period.errors }}
     </div>
-    
+
     <div class="form-group">
         <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
         {{ form.notes }}
-        {% if form.notes.errors %}
-            <ul class="errorlist">
-                {% for error in form.notes.errors %}
-                <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+        {{ form.notes.errors }}
     </div>
-    
+
     <div class="form-actions">
-        <button type="submit" class="btn">🔄 Создать повторяющиеся занятия</button>
+        <button type="submit" class="btn">Создать занятия</button>
         <a href="{% url 'calendar' %}" class="btn btn-secondary">Отмена</a>
     </div>
 </form>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Обработчик для radio-опций
-        const radioOptions = document.querySelectorAll('.radio-option');
-        radioOptions.forEach(option => {
-            option.addEventListener('click', function(e) {
-                if (e.target.tagName !== 'INPUT') {
-                    const radio = this.querySelector('input[type="radio"]');
-                    if (radio) {
-                        radio.checked = true;
-                    }
-                }
-            });
-        });
-    });
-</script>
 {% endblock %}
 

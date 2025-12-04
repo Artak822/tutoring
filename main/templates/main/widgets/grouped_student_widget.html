@@ -6,7 +6,7 @@
         
         .student-group-block {
             background: var(--bg-tertiary);
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--border);
             border-radius: 12px;
             padding: 15px;
             margin-bottom: 15px;
@@ -15,14 +15,19 @@
         }
         
         .student-group-block:hover {
-            border-color: var(--btn-primary);
+            border-color: var(--primary);
             box-shadow: var(--shadow);
         }
         
         .student-group-block.selected {
-            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(10, 88, 202, 0.05) 100%);
-            border-color: var(--btn-primary);
-            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        [data-theme="dark"] .student-group-block.selected {
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.2) 0%, rgba(129, 140, 248, 0.1) 100%);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
         }
         
         .group-header {
@@ -31,13 +36,13 @@
             align-items: center;
             margin-bottom: 12px;
             padding-bottom: 10px;
-            border-bottom: 2px solid var(--border-color);
+            border-bottom: 2px solid var(--border);
         }
         
         .group-name {
             font-size: 16px;
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--text);
         }
         
         .group-count {
@@ -58,22 +63,22 @@
             display: flex;
             align-items: center;
             padding: 10px 12px;
-            background: var(--bg-secondary);
-            border: 2px solid var(--border-color);
+            background: var(--surface);
+            border: 2px solid var(--border);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
         
         .student-item:hover {
-            border-color: var(--btn-primary);
+            border-color: var(--primary);
             transform: translateX(2px);
         }
         
         .student-item.selected {
-            background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
             color: white;
-            border-color: var(--btn-primary);
+            border-color: var(--primary);
         }
         
         .student-item input[type="checkbox"] {

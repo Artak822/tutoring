@@ -3,133 +3,153 @@
 {% block title %}Занятие - {{ lesson.date }}{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 30px;">
-    <a href="{% url 'calendar' %}" class="btn btn-secondary">← Назад к календарю</a>
+<div style="margin-bottom: 24px;">
+    <a href="{% url 'calendar' %}" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Назад к календарю
+    </a>
 </div>
 
 <div class="page-header">
-    <h2 style="font-weight: 400; font-size: 24px; margin: 0;">
-        Занятие
-    </h2>
-    <div class="page-actions" style="display: flex; gap: 10px;">
+    <h1>Занятие</h1>
+    <div class="page-actions">
         <a href="{% url 'lesson_edit' lesson.pk %}" class="btn">Редактировать</a>
         <a href="{% url 'lesson_delete' lesson.pk %}" class="btn btn-danger">Удалить</a>
     </div>
 </div>
 
-<div class="detail-item" style="margin-top: 20px; margin-bottom: 40px; padding: 30px; background: var(--bg-tertiary); border-radius: 12px; border: 2px solid var(--border-color);">
-    <div class="detail-label" style="font-size: 18px; margin-bottom: 20px; font-weight: 600;">Посещаемость и оплаты</div>
-    <div class="detail-value">
-        {% for data in students_data %}
-            <div class="student-card {% if data.has_debt %}student-card-debt{% elif data.payment %}student-card-paid{% else %}student-card-default{% endif %}">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-                    <div>
-                        <strong><a href="{% url 'student_detail' data.student.pk %}">{{ data.student }}</a></strong>
-                    </div>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <a href="{% url 'mark_attendance' lesson.pk data.student.pk %}" class="btn" style="font-size: 12px; padding: 5px 10px;">
-                            {% if data.attendance %}Изменить{% else %}Отметить{% endif %} посещаемость
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Посещаемость и оплаты</h3>
+    </div>
+    {% if students_data %}
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ученик</th>
+                    <th>Посещаемость</th>
+                    <th>Оплата</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in students_data %}
+                <tr>
+                    <td>
+                        <a href="{% url 'student_detail' item.student.pk %}" style="font-weight: 600; color: var(--text); text-decoration: none;">
+                            {{ item.student.last_name }} {{ item.student.first_name }}
                         </a>
-                        {% if data.attendance and data.attendance.status == 'present' %}
-                            <a href="{% url 'mark_payment' lesson.pk data.student.pk %}" class="btn" style="font-size: 12px; padding: 5px 10px; background: {% if data.payment %}#666{% else %}#28a745{% endif %};">
-                                {% if data.payment %}Изменить{% else %}Отметить{% endif %} оплату
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 8px;">
-                    <strong>Посещаемость:</strong>
-                    {% if data.attendance %}
-                        {% if data.attendance.status == 'present' %}
-                            <span class="status-success">✓ Присутствовал</span>
+                    </td>
+                    <td>
+                        {% if item.attendance %}
+                            {% if item.attendance.status == 'present' %}
+                                <span style="color: var(--success); font-weight: 600;">Присутствовал</span>
+                            {% else %}
+                                <span style="color: var(--danger); font-weight: 600;">Отсутствовал</span>
+                            {% endif %}
                         {% else %}
-                            <span class="status-error">✗ Отсутствовал</span>
+                            <a href="{% url 'mark_attendance' lesson.pk item.student.pk %}" class="btn btn-sm">Отметить</a>
                         {% endif %}
-                        {% if data.attendance.notes %}
-                            <div style="margin-top: 5px; font-size: 13px; color: var(--text-secondary);">{{ data.attendance.notes }}</div>
+                    </td>
+                    <td>
+                        {% if item.payment %}
+                            <span style="color: var(--success); font-weight: 600;">
+                                {{ item.payment.amount|floatformat:0 }} ₽
+                                {% if item.payment.is_balance_payment %}
+                                    <span style="font-size: 12px; color: var(--text-muted); display: block; margin-top: 2px;">(с предоплаты)</span>
+                                {% endif %}
+                            </span>
+                        {% elif item.attendance and item.attendance.status == 'present' %}
+                            {% if lesson.lesson_price > 0 %}
+                                <a href="{% url 'mark_payment' lesson.pk item.student.pk %}" class="btn btn-sm">Оплатить</a>
+                            {% else %}
+                                <span style="color: var(--text-muted);">Бесплатно</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: var(--text-muted);">—</span>
                         {% endif %}
-                    {% else %}
-                        <span style="color: var(--text-muted);">Не отмечено</span>
-                    {% endif %}
-                </div>
-                
-                <div>
-                    <strong>Оплата:</strong>
-                    {% if data.payment %}
-                        <span class="status-success">✓ {{ data.payment.amount }} руб.</span>
-                        <span style="font-size: 13px; color: var(--text-secondary);">({{ data.payment.payment_date|date:"d.m.Y" }})</span>
-                        <span style="font-size: 13px; color: var(--text-secondary); margin-left: 5px;">— {{ data.payment.get_payment_method_display }}</span>
-                        {% if data.payment.notes %}
-                            <div style="margin-top: 5px; font-size: 13px; color: var(--text-secondary);">{{ data.payment.notes }}</div>
-                        {% endif %}
-                    {% elif data.attendance and data.attendance.status == 'present' and lesson.lesson_price > 0 %}
-                        <span class="status-warning" style="font-weight: 600;">⚠ Долг: {{ lesson.lesson_price }} руб.</span>
-                    {% else %}
-                        <span style="color: var(--text-muted);">Не оплачено</span>
-                    {% endif %}
-                </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            {% if item.attendance %}
+                                <a href="{% url 'mark_attendance' lesson.pk item.student.pk %}" class="btn btn-sm btn-secondary">Изменить посещаемость</a>
+                            {% endif %}
+                            {% if item.payment %}
+                                <a href="{% url 'mark_payment' lesson.pk item.student.pk %}" class="btn btn-sm btn-secondary">Изменить оплату</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="text-align: center; color: var(--text-secondary); padding: 32px;">Нет учеников</p>
+    {% endif %}
+</div>
+<br>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 32px;">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Информация</h3>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Дата</p>
+                <p style="font-size: 16px; font-weight: 600; margin: 0;">{{ lesson.date|date:"d.m.Y" }}</p>
             </div>
-        {% endfor %}
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Время</p>
+                <p style="font-size: 16px; font-weight: 600; margin: 0;">{{ lesson.time|time:"H:i" }}</p>
+            </div>
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Длительность</p>
+                <p style="font-size: 16px; font-weight: 600; margin: 0;">{{ lesson.duration }} мин</p>
+            </div>
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Стоимость</p>
+                <p style="font-size: 16px; font-weight: 600; margin: 0;">{{ lesson.lesson_price|floatformat:0 }} ₽</p>
+            </div>
+            {% if lesson.subject %}
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Предмет/Тема</p>
+                <p style="font-size: 16px; margin: 0;">{{ lesson.subject }}</p>
+            </div>
+            {% endif %}
+            {% if lesson.notes %}
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Заметки</p>
+                <p style="font-size: 14px; margin: 0; white-space: pre-wrap;">{{ lesson.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Статистика</h3>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Учеников</p>
+                <p style="font-size: 24px; font-weight: 700; margin: 0;">{{ lesson.students.count }}</p>
+            </div>
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Присутствовало</p>
+                <p style="font-size: 24px; font-weight: 700; color: var(--success); margin: 0;">{{ present_count }}</p>
+            </div>
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Общая стоимость</p>
+                <p style="font-size: 24px; font-weight: 700; color: var(--primary); margin: 0;">{{ total_price|floatformat:0 }} ₽</p>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="detail-item">
-    <div class="detail-label">Ученики</div>
-    <div class="detail-value">
-        {% for student in lesson.students.all %}
-            <a href="{% url 'student_detail' student.pk %}">{{ student }}</a>{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    </div>
-</div>
 
-<div class="detail-item">
-    <div class="detail-label">Дата</div>
-    <div class="detail-value">{{ lesson.date|date:"d.m.Y" }}</div>
-</div>
-
-<div class="detail-item">
-    <div class="detail-label">Время</div>
-    <div class="detail-value">{{ lesson.time|time:"H:i" }}</div>
-</div>
-
-<div class="detail-item">
-    <div class="detail-label">Длительность</div>
-    <div class="detail-value">{{ lesson.duration }} минут</div>
-</div>
-
-<div class="detail-item">
-    <div class="detail-label">Стоимость занятия (за одного ученика)</div>
-    <div class="detail-value">{{ lesson.lesson_price }} руб.</div>
-</div>
-
-{% if present_count > 0 %}
-<div class="detail-item">
-    <div class="detail-label">Общая стоимость занятия</div>
-    <div class="detail-value">
-        <strong>{{ total_price }} руб.</strong>
-        <span style="font-size: 14px; color: var(--text-secondary);">({{ lesson.lesson_price }} × {{ present_count }} пришедших)</span>
-    </div>
-</div>
-{% endif %}
-
-{% if lesson.subject %}
-<div class="detail-item">
-    <div class="detail-label">Предмет/Тема</div>
-    <div class="detail-value">{{ lesson.subject }}</div>
-</div>
-{% endif %}
-
-{% if lesson.notes %}
-<div class="detail-item">
-    <div class="detail-label">Заметки</div>
-    <div class="detail-value" style="white-space: pre-wrap;">{{ lesson.notes }}</div>
-</div>
-{% endif %}
-
-<div class="detail-item">
-    <div class="detail-label">Дата создания</div>
-    <div class="detail-value">{{ lesson.created_at|date:"d.m.Y H:i" }}</div>
-</div>
 {% endblock %}
-

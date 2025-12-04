@@ -3,17 +3,24 @@
 {% block title %}{{ student.last_name }} {{ student.first_name }}{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 30px;">
-    <a href="{% url 'student_list' %}" class="btn btn-secondary">← Назад к списку</a>
+<div style="margin-bottom: 24px;">
+    <a href="{% url 'student_list' %}" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Назад к списку
+    </a>
 </div>
 
 <div class="page-header">
-    <h2 style="font-weight: 400; font-size: 24px; margin: 0;">
-        {{ student.last_name }} {{ student.first_name }}
-    </h2>
-    <div class="page-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <h1>{{ student.last_name }} {{ student.first_name }}</h1>
+    <div class="page-actions">
         {% if total_debt > 0 %}
-        <a href="{% url 'clear_all_debts' student.pk %}" class="btn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+        <a href="{% url 'clear_all_debts' student.pk %}" class="btn" style="background: var(--success);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
             Погасить долги
         </a>
         {% endif %}
@@ -23,161 +30,147 @@
 </div>
 
 {% if student.prepaid_balance > 0 %}
-<div class="alert alert-info" style="margin-top: 15px;">
-    <strong>Баланс предоплаты:</strong> {{ student.prepaid_balance }} руб. Следующее занятие будет списано автоматически.
+<div class="alert alert-info" style="margin-bottom: 24px;">
+    <strong>Баланс предоплаты:</strong> {{ student.prepaid_balance }} ₽. Следующее занятие будет списано автоматически.
 </div>
 {% endif %}
 
-<div class="detail-item">
-    <div class="detail-label">Имя</div>
-    <div class="detail-value">{{ student.first_name }}</div>
-</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 32px;">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Информация</h3>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Имя</p>
+                <p style="font-size: 16px; font-weight: 600; margin: 0;">{{ student.first_name }}</p>
+            </div>
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Фамилия</p>
+                <p style="font-size: 16px; font-weight: 600; margin: 0;">{{ student.last_name }}</p>
+            </div>
+            {% if student.phone %}
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Телефон</p>
+                <p style="font-size: 16px; margin: 0;"><a href="tel:{{ student.phone }}" style="color: var(--primary); text-decoration: none;">{{ student.phone }}</a></p>
+            </div>
+            {% endif %}
+            {% if student.telegram %}
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Телеграм</p>
+                <p style="font-size: 16px; margin: 0;"><a href="tg://resolve?domain={{ student.telegram }}" style="color: var(--primary); text-decoration: none;">{{ student.telegram }}</a></p>
+            </div>
+            {% endif %}
+            {% if student.grade %}
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Класс</p>
+                <p style="font-size: 16px; font-weight: 600; margin: 0;">{{ student.grade }}</p>
+            </div>
+            {% endif %}
+            {% if student.notes %}
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Заметки</p>
+                <p style="font-size: 14px; margin: 0; white-space: pre-wrap;">{{ student.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 
-<div class="detail-item">
-    <div class="detail-label">Фамилия</div>
-    <div class="detail-value">{{ student.last_name }}</div>
-</div>
-
-{% if student.phone %}
-<div class="detail-item">
-    <div class="detail-label">Телефон</div>
-    <div class="detail-value"><a href="tel:{{ student.phone }}">{{ student.phone }}</a></div>
-</div>
-{% endif %}
-
-{% if student.telegram %}
-<div class="detail-item">
-    <div class="detail-label">Телеграм</div>
-    <div class="detail-value"><a href="tg://resolve?domain={{ student.telegram }}">{{ student.telegram }}</a></div>
-</div>
-{% endif %}
-
-{% if student.grade %}
-<div class="detail-item">
-    <div class="detail-label">Класс</div>
-    <div class="detail-value">{{ student.grade }}</div>
-</div>
-{% endif %}
-
-{% if student.notes %}
-<div class="detail-item">
-    <div class="detail-label">Заметки</div>
-    <div class="detail-value" style="white-space: pre-wrap;">{{ student.notes }}</div>
-</div>
-{% endif %}
-
-<div class="detail-item">
-    <div class="detail-label">Статус</div>
-    <div class="detail-value">
-        {% if student.is_active %}
-            <span class="status-success">Активен</span>
-        {% else %}
-            <span class="status-error">Неактивен</span>
-        {% endif %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Статистика</h3>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Всего занятий</p>
+                <p style="font-size: 24px; font-weight: 700; margin: 0;">{{ total_lessons }}</p>
+            </div>
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Посещено</p>
+                <p style="font-size: 24px; font-weight: 700; color: var(--success); margin: 0;">{{ present_lessons }}</p>
+            </div>
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Пропущено</p>
+                <p style="font-size: 24px; font-weight: 700; color: var(--danger); margin: 0;">{{ absent_lessons }}</p>
+            </div>
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Оплачено</p>
+                <p style="font-size: 24px; font-weight: 700; color: var(--success); margin: 0;">{{ total_paid|floatformat:0 }} ₽</p>
+            </div>
+            <div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Долг</p>
+                <p style="font-size: 24px; font-weight: 700; color: {% if total_debt > 0 %}var(--danger){% else %}var(--text-muted){% endif %}; margin: 0;">{{ total_debt|floatformat:0 }} ₽</p>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="detail-item">
-    <div class="detail-label">Дата создания</div>
-    <div class="detail-value">{{ student.created_at|date:"d.m.Y H:i" }}</div>
-</div>
-
-<div class="detail-item">
-    <div class="detail-label">Последнее обновление</div>
-    <div class="detail-value">{{ student.updated_at|date:"d.m.Y H:i" }}</div>
-</div>
-
-<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--border-color);">
-    <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Статистика</div>
-    <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-        <div class="stat-card stat-card-blue">
-            <div class="stat-label" style="font-size: 12px;">Всего занятий</div>
-            <div class="stat-value" style="font-size: 24px;">{{ total_lessons }}</div>
-        </div>
-        <div class="stat-card stat-card-green">
-            <div class="stat-label" style="font-size: 12px;">Посещено</div>
-            <div class="stat-value" style="font-size: 24px;">{{ present_lessons }}</div>
-        </div>
-        <div class="stat-card stat-card-red">
-            <div class="stat-label" style="font-size: 12px;">Пропущено</div>
-            <div class="stat-value" style="font-size: 24px;">{{ absent_lessons }}</div>
-        </div>
-        <div class="stat-card stat-card-green">
-            <div class="stat-label" style="font-size: 12px;">Всего оплачено</div>
-            <div class="stat-value" style="font-size: 24px;">{{ total_paid }} руб.</div>
-        </div>
-        <div class="stat-card stat-card-blue">
-            <div class="stat-label" style="font-size: 12px;">Предоплата</div>
-            <div class="stat-value" style="font-size: 24px;">{{ prepaid_balance }} руб.</div>
-        </div>
-        {% if total_debt > 0 %}
-        <div class="stat-card stat-card-orange">
-            <div class="stat-label" style="font-size: 12px;">Долг</div>
-            <div class="stat-value" style="font-size: 24px;">{{ total_debt }} руб.</div>
-        </div>
-        {% endif %}
+<div class="card" style="margin-bottom: 32px;">
+    <div class="card-header">
+        <h3 class="card-title">Занятия</h3>
     </div>
-</div>
-
-{% if lessons_data %}
-<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--border-color);">
-    <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Занятия</div>
-    <div class="table-responsive">
+    {% if lessons_data %}
     <table>
         <thead>
             <tr>
                 <th>Дата</th>
                 <th>Время</th>
-                <th>Предмет</th>
                 <th>Посещаемость</th>
                 <th>Оплата</th>
+                <th>Действия</th>
             </tr>
         </thead>
         <tbody>
             {% for item in lessons_data %}
             <tr>
-                <td><a href="{% url 'lesson_detail' item.lesson.pk %}">{{ item.lesson.date|date:"d.m.Y" }}</a></td>
+                <td>{{ item.lesson.date|date:"d.m.Y" }}</td>
                 <td>{{ item.lesson.time|time:"H:i" }}</td>
-                <td>{{ item.lesson.subject|default:"—" }}</td>
                 <td>
                     {% if item.attendance_status == 'present' %}
-                        <span class="status-success">✓ Посетил</span>
+                        <span style="color: var(--success); font-weight: 600;">Присутствовал</span>
                     {% elif item.attendance_status == 'absent' %}
-                        <span class="status-error">✗ Не посетил</span>
+                        <span style="color: var(--danger); font-weight: 600;">Отсутствовал</span>
                     {% else %}
                         <span style="color: var(--text-muted);">Не отмечено</span>
                     {% endif %}
                 </td>
                 <td>
-                    {% if item.payment_status == 'paid' %}
-                        {% if item.payment_from_balance %}
-                            <span class="status-success">✓ Оплачено с предоплаты ({{ item.payment.amount }} руб.)</span>
-                        {% else %}
-                            <span class="status-success">✓ Оплачено ({{ item.payment.amount }} руб.)</span>
-                        {% endif %}
+                    {% if item.payment %}
+                        <span style="color: var(--success); font-weight: 600;">
+                            {{ item.payment.amount|floatformat:0 }} ₽
+                            {% if item.payment_from_balance %}
+                                <span style="font-size: 12px; color: var(--text-muted);">(с предоплаты)</span>
+                            {% endif %}
+                        </span>
                     {% elif item.payment_status == 'unpaid' %}
-                        <span class="status-warning" style="font-weight: 600;">⚠ Не оплачено ({{ item.lesson.lesson_price }} руб.)</span>
+                        <span style="color: var(--danger); font-weight: 600;">Не оплачено</span>
                     {% else %}
                         <span style="color: var(--text-muted);">—</span>
                     {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'lesson_detail' item.lesson.pk %}" class="btn btn-sm btn-secondary">Подробнее</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    </div>
+    {% else %}
+    <p style="text-align: center; color: var(--text-secondary); padding: 32px;">Нет занятий</p>
+    {% endif %}
 </div>
-{% endif %}
 
 {% if payments %}
-<div class="detail-item" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--border-color);">
-    <div class="detail-label" style="font-size: 16px; margin-bottom: 15px;">Последние оплаты</div>
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Последние оплаты</h3>
+    </div>
     <table>
         <thead>
             <tr>
                 <th>Дата</th>
                 <th>Сумма</th>
-                <th>Способ оплаты</th>
+                <th>Способ</th>
                 <th>Занятие</th>
             </tr>
         </thead>
@@ -185,13 +178,15 @@
             {% for payment in payments %}
             <tr>
                 <td>{{ payment.payment_date|date:"d.m.Y" }}</td>
-                <td>{{ payment.amount }} руб.</td>
+                <td style="font-weight: 600;">{{ payment.amount|floatformat:0 }} ₽</td>
                 <td>{{ payment.get_payment_method_display }}</td>
                 <td>
                     {% if payment.lesson %}
-                        <a href="{% url 'lesson_detail' payment.lesson.pk %}">{{ payment.lesson.date|date:"d.m.Y" }}</a>
+                        <a href="{% url 'lesson_detail' payment.lesson.pk %}" style="color: var(--primary); text-decoration: none;">
+                            {{ payment.lesson.date|date:"d.m.Y" }}
+                        </a>
                     {% else %}
-                        —
+                        <span style="color: var(--text-muted);">—</span>
                     {% endif %}
                 </td>
             </tr>

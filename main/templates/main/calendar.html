@@ -8,9 +8,21 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
         flex-wrap: wrap;
         gap: 15px;
+    }
+    
+    @media (min-height: 900px) {
+        .calendar-header {
+            margin-bottom: 24px;
+        }
+    }
+    
+    @media (min-height: 1100px) {
+        .calendar-header {
+            margin-bottom: 30px;
+        }
     }
     
     .calendar-nav {
@@ -23,10 +35,7 @@
     .calendar-title {
         font-size: 28px;
         font-weight: 600;
-        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: var(--text);
         margin: 0;
     }
     
@@ -51,29 +60,55 @@
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
-        background: var(--bg-secondary);
+        background: var(--surface);
         border-radius: 16px;
         overflow: hidden;
         box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border);
     }
     
     .calendar-table th {
-        padding: 16px 8px;
+        padding: 10px 6px;
         text-align: center;
-        background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+        background: var(--bg-secondary);
         font-weight: 600;
-        font-size: 13px;
+        font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         color: var(--text-secondary);
-        border-bottom: 2px solid var(--border-color);
+        border-bottom: 2px solid var(--border);
         position: relative;
         cursor: pointer;
         transition: all 0.3s ease;
+        height: 40px;
+    }
+    
+    @media (min-height: 700px) {
+        .calendar-table th {
+            padding: 12px 8px;
+            font-size: 11px;
+            height: 45px;
+        }
+    }
+    
+    @media (min-height: 900px) {
+        .calendar-table th {
+            padding: 14px 8px;
+            font-size: 12px;
+            height: 50px;
+        }
+    }
+    
+    @media (min-height: 1100px) {
+        .calendar-table th {
+            padding: 16px 8px;
+            font-size: 13px;
+            height: 55px;
+        }
     }
     
     .calendar-table th:hover {
-        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
         color: white;
         transform: translateY(-2px);
     }
@@ -85,26 +120,78 @@
         top: 20%;
         height: 60%;
         width: 1px;
-        background: var(--border-color);
+        background: var(--border);
+    }
+    
+    .calendar-table {
+        table-layout: fixed;
+        height: calc(100vh - 300px);
+        min-height: 400px;
+        max-height: 800px;
     }
     
     .calendar-table td {
         width: 14.28%;
-        height: 120px;
+        height: calc((100vh - 300px) / 6);
+        min-height: 60px;
+        max-height: 120px;
         vertical-align: top;
-        padding: 10px 8px;
-        border: 1px solid var(--border-color);
-        background: var(--bg-secondary);
+        padding: 6px 4px;
+        border: 1px solid var(--border);
+        background: var(--surface);
         transition: all 0.3s ease;
         position: relative;
         cursor: pointer;
+        font-size: 12px;
+    }
+    
+    @media (min-height: 700px) {
+        .calendar-table {
+            height: calc(100vh - 280px);
+        }
+        .calendar-table td {
+            height: calc((100vh - 280px) / 6);
+            min-height: 70px;
+            padding: 7px 5px;
+            font-size: 12px;
+        }
+    }
+    
+    @media (min-height: 900px) {
+        .calendar-table {
+            height: calc(100vh - 260px);
+        }
+        .calendar-table td {
+            height: calc((100vh - 260px) / 6);
+            min-height: 90px;
+            padding: 8px 6px;
+            font-size: 13px;
+        }
+    }
+    
+    @media (min-height: 1100px) {
+        .calendar-table {
+            height: calc(100vh - 240px);
+            max-height: 900px;
+        }
+        .calendar-table td {
+            height: calc((100vh - 240px) / 6);
+            min-height: 100px;
+            max-height: 140px;
+            padding: 10px 8px;
+            font-size: 14px;
+        }
     }
     
     .calendar-table td:hover:not(.empty) {
-        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
-        transform: translateY(-2px);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+        transform: translateY(-1px);
         z-index: 10;
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+        box-shadow: 0 2px 8px rgba(59, 63, 92, 0.3);
+    }
+    
+    [data-theme="dark"] .calendar-table td:hover:not(.empty) {
+        box-shadow: 0 2px 8px rgba(107, 114, 128, 0.4);
     }
     
     .calendar-table td:hover:not(.empty) .day-number {
@@ -113,73 +200,143 @@
     
     .calendar-table td:hover:not(.empty) .lesson-item {
         background: var(--bg-secondary);
-        color: var(--text-primary);
+        color: var(--text);
     }
     
     .calendar-table td:hover:not(.empty) .lesson-item a {
-        color: var(--text-primary);
+        color: var(--text);
     }
     
     .calendar-table td:hover:not(.empty) .lesson-count {
         background: var(--bg-secondary);
-        color: var(--text-primary);
+        color: var(--text);
     }
     
     .calendar-table td.empty {
         cursor: default;
-    }
-    
-    .calendar-table td.empty {
-        background: var(--bg-primary);
+        background: var(--bg);
         opacity: 0.5;
     }
     
     .calendar-table td.today {
-        background: linear-gradient(135deg, var(--stat-blue-bg) 0%, rgba(77, 166, 255, 0.1) 100%);
-        border: 2px solid var(--btn-primary);
-        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        background: linear-gradient(135deg, rgba(59, 63, 92, 0.1) 0%, rgba(59, 63, 92, 0.05) 100%);
+        border: 2px solid var(--primary);
+        box-shadow: 0 0 0 2px rgba(59, 63, 92, 0.1);
+    }
+    
+    [data-theme="dark"] .calendar-table td.today {
+        background: linear-gradient(135deg, rgba(107, 114, 128, 0.2) 0%, rgba(107, 114, 128, 0.1) 100%);
+        box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2);
     }
     
     .day-number {
         font-weight: 600;
-        margin-bottom: 8px;
-        color: var(--text-primary);
-        font-size: 16px;
+        margin-bottom: 3px;
+        color: var(--text);
+        font-size: 12px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        height: 32px;
+        width: 22px;
+        height: 22px;
         border-radius: 50%;
         transition: all 0.3s ease;
     }
     
+    @media (min-height: 700px) {
+        .day-number {
+            font-size: 13px;
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+        }
+    }
+    
+    @media (min-height: 900px) {
+        .day-number {
+            font-size: 14px;
+            width: 26px;
+            height: 26px;
+            margin-bottom: 5px;
+        }
+    }
+    
+    @media (min-height: 1100px) {
+        .day-number {
+            font-size: 16px;
+            width: 30px;
+            height: 30px;
+            margin-bottom: 6px;
+        }
+    }
+    
     .day-number.today {
-        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
         color: #fff;
         font-weight: 700;
-        box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+        box-shadow: 0 2px 6px rgba(59, 63, 92, 0.3);
+    }
+    
+    [data-theme="dark"] .day-number.today {
+        box-shadow: 0 2px 6px rgba(107, 114, 128, 0.4);
     }
     
     .lesson-item {
         font-size: 11px;
         padding: 6px 8px;
         margin-bottom: 4px;
-        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
         color: #fff;
-        border-radius: 8px;
+        border-radius: 6px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         transition: all 0.3s ease;
         cursor: pointer;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        line-height: 1.4;
+        font-weight: 500;
+    }
+    
+    @media (min-height: 700px) {
+        .lesson-item {
+            font-size: 12px;
+            padding: 7px 9px;
+            margin-bottom: 5px;
+            border-radius: 7px;
+        }
+    }
+    
+    @media (min-height: 900px) {
+        .lesson-item {
+            font-size: 13px;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+        }
+    }
+    
+    @media (min-height: 1100px) {
+        .lesson-item {
+            font-size: 14px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+        }
+    }
+    
+    [data-theme="dark"] .lesson-item {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     
     .lesson-item:hover {
-        background: linear-gradient(135deg, var(--btn-primary-hover) 0%, var(--btn-primary) 100%);
+        background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
         transform: translateX(2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    [data-theme="dark"] .lesson-item:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     }
     
     .lesson-item a {
@@ -210,13 +367,14 @@
     }
     
     .calendar-mobile-day {
-        background: var(--bg-secondary);
+        background: var(--surface);
         border-radius: 12px;
         padding: 16px;
         margin-bottom: 12px;
         box-shadow: var(--shadow);
-        border-left: 4px solid var(--border-color);
+        border-left: 4px solid var(--border);
         transition: all 0.3s ease;
+        border: 1px solid var(--border);
     }
     
     .calendar-mobile-day:hover {
@@ -225,9 +383,14 @@
     }
     
     .calendar-mobile-day.today {
-        border-left-color: var(--btn-primary);
-        background: linear-gradient(135deg, var(--stat-blue-bg) 0%, rgba(77, 166, 255, 0.05) 100%);
-        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+        border-left-color: var(--primary);
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    }
+    
+    [data-theme="dark"] .calendar-mobile-day.today {
+        background: linear-gradient(135deg, rgba(129, 140, 248, 0.2) 0%, rgba(129, 140, 248, 0.1) 100%);
+        box-shadow: 0 4px 12px rgba(129, 140, 248, 0.2);
     }
     
     .calendar-mobile-day-header {
@@ -236,17 +399,17 @@
         align-items: center;
         margin-bottom: 12px;
         padding-bottom: 8px;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border);
     }
     
     .calendar-mobile-day-number {
         font-size: 20px;
         font-weight: 700;
-        color: var(--text-primary);
+        color: var(--text);
     }
     
     .calendar-mobile-day-number.today {
-        color: var(--btn-primary);
+        color: var(--primary);
     }
     
     .calendar-mobile-day-weekday {
@@ -258,12 +421,16 @@
     }
     
     .calendar-mobile-lesson {
-        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
         color: #fff;
         padding: 10px 12px;
         border-radius: 8px;
         margin-bottom: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    [data-theme="dark"] .calendar-mobile-lesson {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     
     .calendar-mobile-lesson a {
@@ -288,9 +455,10 @@
         text-align: center;
         margin-bottom: 20px;
         padding: 16px;
-        background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+        background: var(--bg-secondary);
         border-radius: 12px;
         box-shadow: var(--shadow);
+        border: 1px solid var(--border);
     }
     
     .calendar-week-nav {
@@ -304,7 +472,7 @@
     .calendar-week-title {
         font-size: 18px;
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--text);
         flex: 1;
         text-align: center;
     }
@@ -336,17 +504,18 @@
     
     .weekday-selector {
         display: none;
-        background: var(--bg-secondary);
+        background: var(--surface);
         border-radius: 12px;
         padding: 15px;
         margin-bottom: 20px;
         box-shadow: var(--shadow);
+        border: 1px solid var(--border);
     }
     
     .weekday-selector-title {
         font-size: 14px;
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--text);
         margin-bottom: 12px;
         text-align: center;
     }
@@ -359,12 +528,12 @@
     
     .weekday-btn {
         padding: 12px 6px;
-        background: var(--bg-tertiary);
-        border: 2px solid var(--border-color);
+        background: var(--bg-secondary);
+        border: 2px solid var(--border);
         border-radius: 8px;
         font-size: 12px;
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--text);
         cursor: pointer;
         transition: all 0.3s ease;
         text-align: center;
@@ -373,9 +542,9 @@
     }
     
     .weekday-btn:hover {
-        background: linear-gradient(135deg, var(--btn-primary) 0%, var(--link-hover) 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
         color: white;
-        border-color: var(--btn-primary);
+        border-color: var(--primary);
         transform: translateY(-2px);
         box-shadow: var(--shadow);
     }

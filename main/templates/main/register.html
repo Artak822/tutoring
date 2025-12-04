@@ -3,57 +3,62 @@
 {% block title %}Регистрация{% endblock %}
 
 {% block content %}
-<div style="max-width: 500px; margin: 0 auto;">
-    <h2 style="margin-bottom: 30px; font-weight: 400; font-size: 24px; text-align: center;">Регистрация репетитора</h2>
+<div style="max-width: 500px; margin: 0 auto; padding: 64px 0;">
+    <div class="page-header" style="justify-content: center; margin-bottom: 32px;">
+        <h1>Регистрация</h1>
+    </div>
 
-    <form method="post">
+    <form method="post" style="background: var(--surface); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--border);">
         {% csrf_token %}
         
         <div class="form-group">
-            <label class="form-label" for="{{ form.username.id_for_label }}">Имя пользователя *</label>
+            <label class="form-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
             {{ form.username }}
             {{ form.username.errors }}
         </div>
-        
+
         <div class="form-group">
-            <label class="form-label" for="{{ form.email.id_for_label }}">Email *</label>
+            <label class="form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
             {{ form.email }}
             {{ form.email.errors }}
         </div>
-        
+
         <div class="form-group">
-            <label class="form-label" for="{{ form.first_name.id_for_label }}">Имя *</label>
+            <label class="form-label" for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
             {{ form.first_name }}
             {{ form.first_name.errors }}
         </div>
-        
+
         <div class="form-group">
-            <label class="form-label" for="{{ form.last_name.id_for_label }}">Фамилия *</label>
+            <label class="form-label" for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
             {{ form.last_name }}
             {{ form.last_name.errors }}
         </div>
-        
+
         <div class="form-group">
-            <label class="form-label" for="{{ form.phone.id_for_label }}">Телефон</label>
+            <label class="form-label" for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
             {{ form.phone }}
             {{ form.phone.errors }}
         </div>
-        
+
         <div class="form-group">
-            <label class="form-label" for="{{ form.password1.id_for_label }}">Пароль *</label>
+            <label class="form-label" for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
             {{ form.password1 }}
             {{ form.password1.errors }}
         </div>
-        
+
         <div class="form-group">
-            <label class="form-label" for="{{ form.password2.id_for_label }}">Подтверждение пароля *</label>
+            <label class="form-label" for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
             {{ form.password2 }}
             {{ form.password2.errors }}
         </div>
-        
+
         <div class="form-actions">
-            <button type="submit" class="btn">Зарегистрироваться</button>
-            <a href="{% url 'login' %}" class="btn btn-secondary">Уже есть аккаунт? Войти</a>
+            <button type="submit" class="btn" style="width: 100%;">Зарегистрироваться</button>
+        </div>
+
+        <div style="text-align: center; margin-top: 24px; color: var(--text-secondary);">
+            Уже есть аккаунт? <a href="{% url 'login' %}" style="color: var(--primary); text-decoration: none; font-weight: 500;">Войти</a>
         </div>
     </form>
 </div>

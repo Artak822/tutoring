@@ -17,11 +17,31 @@
     --text-primary: #0f172a;
     --text-secondary: #475569;
     --text-tertiary: #94a3b8;
+    /* Совместимость с base.html */
+    --text: var(--text-primary);
+    --text-muted: var(--text-tertiary);
+    --surface: var(--bg-primary);
+    --bg: var(--bg-secondary);
     /* Более выразительные, но мягкие тени */
     --shadow-sm: 0 4px 8px rgba(15, 23, 42, 0.06);
     --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
     --shadow-md: 0 18px 35px rgba(15, 23, 42, 0.12);
     --shadow-lg: 0 26px 55px rgba(15, 23, 42, 0.16);
+}
+
+[data-theme="dark"] {
+    --text: #f1f5f9;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    --text-muted: #94a3b8;
+    --bg-primary: #1e293b;
+    --bg-secondary: #0f172a;
+    --bg-tertiary: #334155;
+    --surface: #1e293b;
+    --bg: #020617;
+    --border: #334155;
+    --border-light: #334155;
 }
 
 * {
@@ -162,8 +182,20 @@ body {
     border-bottom: 1px solid var(--border-light);
     padding: 1.25rem 1.5rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
     font-size: 0.9375rem;
+}
+
+.card-header * {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .card-header {
+    color: var(--text) !important;
+}
+
+[data-theme="dark"] .card-header * {
+    color: var(--text) !important;
 }
 
 .card-body {

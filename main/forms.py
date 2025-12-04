@@ -263,7 +263,7 @@ class LessonForm(forms.ModelForm):
             'date': 'Дата',
             'time': 'Время',
             'duration': 'Длительность (минуты)',
-            'lesson_price': 'Стоимость занятия (за одного ученика)',
+            'lesson_price': 'Стоимость занятия',
             'subject': 'Предмет/Тема',
             'notes': 'Заметки',
         }
@@ -271,6 +271,23 @@ class LessonForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         tutor = kwargs.pop('tutor', None)
         initial_date = kwargs.pop('initial_date', None)
+        
+        # Преобразуем строку в объект date, если это строка, до вызова super()
+        if initial_date and isinstance(initial_date, str):
+            try:
+                from datetime import datetime
+                initial_date = datetime.strptime(initial_date, '%Y-%m-%d').date()
+            except (ValueError, TypeError):
+                initial_date = timezone.now().date()
+        
+        # Устанавливаем initial для даты, если передана
+        if initial_date and 'initial' not in kwargs:
+            kwargs['initial'] = {'date': initial_date}
+        elif not initial_date and 'initial' not in kwargs:
+            kwargs['initial'] = {'date': timezone.now().date()}
+        elif initial_date and 'initial' in kwargs:
+            kwargs['initial']['date'] = initial_date
+        
         super().__init__(*args, **kwargs)
         
         # Заменяем виджет на кастомный для учеников
@@ -286,12 +303,23 @@ class LessonForm(forms.ModelForm):
         if not self.instance.pk and not self.fields['lesson_price'].initial:
             self.fields['lesson_price'].initial = 500
         
-        # Устанавливаем начальную дату, если передана
-        if initial_date and not self.instance.pk:
-            self.fields['date'].initial = initial_date
-        elif not self.instance.pk:
-            # Если дата не передана, используем сегодняшнюю
-            self.fields['date'].initial = timezone.now().date()
+        # Убеждаемся, что значение даты установлено в виджете
+        if not self.instance.pk:
+            if self.fields['date'].initial:
+                date_value = self.fields['date'].initial
+                if hasattr(date_value, 'strftime'):
+                    date_str = date_value.strftime('%Y-%m-%d')
+                elif isinstance(date_value, str):
+                    date_str = date_value
+                else:
+                    date_str = str(date_value)
+                # Устанавливаем значение в виджете
+                self.fields['date'].widget.attrs['value'] = date_str
+            else:
+                # Если initial не установлен, устанавливаем сегодняшнюю дату
+                today = timezone.now().date()
+                self.fields['date'].initial = today
+                self.fields['date'].widget.attrs['value'] = today.strftime('%Y-%m-%d')
     
 
 
@@ -330,7 +358,7 @@ class PaymentForm(forms.ModelForm):
         widgets = {
             'amount': forms.NumberInput(attrs={
                 'class': 'form-input',
-                'min': '0.01',
+                'min': '0',
                 'step': '0.01',
                 'placeholder': '0.00'
             }),

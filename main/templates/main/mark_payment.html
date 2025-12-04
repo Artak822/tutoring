@@ -3,32 +3,32 @@
 {% block title %}Отметить оплату{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 30px;">
-    <a href="{% url 'lesson_detail' lesson.pk %}" class="btn btn-secondary">← Назад к занятию</a>
+<div style="margin-bottom: 24px;">
+    <a href="{% url 'lesson_detail' lesson.pk %}" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Назад к занятию
+    </a>
 </div>
 
-<h2 style="margin-bottom: 10px; font-weight: 400; font-size: 24px;">Отметить оплату</h2>
-<p style="color: var(--text-secondary); margin-bottom: 15px;">
+<div class="page-header">
+    <h1>Отметить оплату</h1>
+</div>
+
+<p style="color: var(--text-secondary); margin-bottom: 24px;">
     Ученик: <strong>{{ student }}</strong><br>
     Занятие: <strong>{{ lesson.date|date:"d.m.Y" }} {{ lesson.time|time:"H:i" }}</strong><br>
     {% if lesson.lesson_price > 0 %}
-        Стоимость: <strong>{{ lesson.lesson_price }} руб.</strong>
+        Стоимость: <strong>{{ lesson.lesson_price }} ₽</strong>
     {% endif %}
     <br>
-    Баланс предоплаты: <strong>{{ student.prepaid_balance }} руб.</strong>
+    Баланс предоплаты: <strong>{{ student.prepaid_balance }} ₽</strong>
 </p>
 
-<div class="alert alert-info" style="margin-bottom: 25px;">
-    <p style="margin: 0;">
-        Можно указать сумму больше стоимости занятия — разница автоматически попадет в предоплату и будет списана при следующем посещении.
-    </p>
-</div>
-
-{% if not attendance %}
-<div class="alert alert-warning">
-    <p style="margin: 0;">
-        ⚠ Внимание: Ученик не отмечен как присутствовавший на занятии.
-    </p>
+{% if student.prepaid_balance > 0 %}
+<div class="alert alert-info" style="margin-bottom: 24px;">
+    Можно указать сумму больше стоимости занятия — разница автоматически попадет в предоплату и будет списана при следующем посещении.
 </div>
 {% endif %}
 
@@ -36,36 +36,30 @@
     {% csrf_token %}
     
     <div class="form-group">
-        <label class="form-label" for="{{ form.amount.id_for_label }}">{{ form.amount.label }} *</label>
+        <label class="form-label" for="{{ form.amount.id_for_label }}">{{ form.amount.label }}</label>
         {{ form.amount }}
         {{ form.amount.errors }}
     </div>
-    
+
     <div class="form-group">
-        <label class="form-label" for="{{ form.payment_date.id_for_label }}">{{ form.payment_date.label }} *</label>
+        <label class="form-label" for="{{ form.payment_date.id_for_label }}">{{ form.payment_date.label }}</label>
         {{ form.payment_date }}
         {{ form.payment_date.errors }}
     </div>
-    
+
     <div class="form-group">
-        <label class="form-label">{{ form.payment_method.label }} *</label>
+        <label class="form-label">{{ form.payment_method.label }}</label>
         <div class="radio-group">
             {% for choice in form.payment_method %}
-            <label class="radio-option" for="{{ choice.id_for_label }}">
-                {{ choice.tag }}
-                <span>{{ choice.choice_label }}</span>
-            </label>
+                <label class="radio-option" for="{{ choice.id_for_label }}">
+                    {{ choice.tag }}
+                    <span>{{ choice.choice_label }}</span>
+                </label>
             {% endfor %}
         </div>
-        {% if form.payment_method.errors %}
-            <ul class="errorlist">
-                {% for error in form.payment_method.errors %}
-                <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+        {{ form.payment_method.errors }}
     </div>
-    
+
     <div class="form-group">
         <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
         {{ form.notes }}
@@ -77,52 +71,5 @@
         <a href="{% url 'lesson_detail' lesson.pk %}" class="btn btn-secondary">Отмена</a>
     </div>
 </form>
-
-<style>
-    .radio-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .form-radio {
-        margin-right: 10px;
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-        flex-shrink: 0;
-    }
-    
-    .radio-option {
-        display: flex;
-        align-items: center;
-        padding: 12px 14px;
-        background: var(--bg-tertiary);
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: 2px solid transparent;
-        box-shadow: var(--shadow);
-        gap: 10px;
-    }
-    
-    .radio-option:hover {
-        background: var(--bg-primary);
-        border-color: var(--btn-primary);
-        box-shadow: var(--shadow-lg);
-    }
-    
-    .radio-option input[type="radio"]:checked + span {
-        font-weight: 600;
-        color: var(--btn-primary);
-    }
-    
-    .radio-option span {
-        cursor: pointer;
-        margin: 0;
-        font-size: 15px;
-        flex-grow: 1;
-    }
-</style>
 {% endblock %}
 

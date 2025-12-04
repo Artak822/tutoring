@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.db.models import Q, Sum
 from datetime import datetime, timedelta
 from calendar import monthrange
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from .models import Student, Lesson, Attendance, Payment, Tutor, StudentGroup
 from .forms import StudentForm, LessonForm, AttendanceForm, PaymentForm, TutorRegistrationForm, ClearAllDebtsForm, RecurringLessonForm, StudentGroupForm
 
@@ -525,6 +525,12 @@ def mark_attendance(request, lesson_pk, student_pk):
                 attendance.save()
                 if attendance.status == 'present':
                     student.try_auto_pay_lesson(lesson)
+                elif attendance.status == 'absent':
+                    # Если сразу ставим "отсутствовал", удаляем все оплаты за это занятие
+                    payments_to_delete = Payment.objects.filter(lesson=lesson, student=student)
+                    if payments_to_delete.exists():
+                        payments_to_delete.delete()
+                        messages.info(request, f'Оплаты за занятие удалены, так как ученик отсутствовал.')
                 messages.success(request, f'Посещаемость для {student} отмечена.')
                 return redirect('lesson_detail', pk=lesson_pk)
         else:
@@ -536,7 +542,13 @@ def mark_attendance(request, lesson_pk, student_pk):
                 if updated_attendance.status == 'present':
                     student.try_auto_pay_lesson(lesson)
                 elif previous_status == 'present' and updated_attendance.status != 'present':
+                    # Если статус изменился с "присутствовал" на "отсутствовал", удаляем все оплаты
                     student.refund_balance_payment_for_lesson(lesson)
+                    # Удаляем все оплаты за это занятие
+                    payments_to_delete = Payment.objects.filter(lesson=lesson, student=student)
+                    if payments_to_delete.exists():
+                        payments_to_delete.delete()
+                        messages.info(request, f'Оплаты за занятие удалены, так как ученик отсутствовал.')
                 messages.success(request, f'Посещаемость для {student} обновлена.')
                 return redirect('lesson_detail', pk=lesson_pk)
     else:
@@ -580,6 +592,31 @@ def mark_payment(request, lesson_pk, student_pk):
     existing_payment = Payment.objects.filter(lesson=lesson, student=student).first()
     
     if request.method == 'POST':
+        # Проверяем сумму до валидации формы
+        try:
+            amount_value = Decimal(request.POST.get('amount', '0') or '0')
+        except (ValueError, InvalidOperation):
+            amount_value = Decimal('0')
+        
+        # Если сумма равна 0
+        if amount_value == 0:
+            if existing_payment:
+                # Если есть существующая оплата, удаляем её
+                previous_amount = existing_payment.amount
+                was_balance_payment = existing_payment.is_balance_payment
+                # Возвращаем баланс, если оплата была списана с предоплаты
+                if was_balance_payment:
+                    student.add_prepaid_balance(previous_amount)
+                # Обновляем баланс переплаты
+                student.update_overpayment_balance(lesson, previous_amount, Decimal('0.00'))
+                # Удаляем оплату
+                existing_payment.delete()
+                messages.success(request, f'Оплата для {student} удалена.')
+            else:
+                # Если новой оплаты нет, просто возвращаемся
+                messages.info(request, 'Оплата не была создана, так как сумма равна 0.')
+            return redirect('lesson_detail', pk=lesson_pk)
+        
         # Если есть существующая оплата, передаем instance для обновления
         if existing_payment:
             previous_amount = existing_payment.amount
@@ -592,6 +629,8 @@ def mark_payment(request, lesson_pk, student_pk):
         
         if form.is_valid():
             payment = form.save(commit=False)
+            
+            # Сохраняем оплату (сумма уже проверена выше, если была 0, то оплата удалена)
             payment.student = student
             payment.lesson = lesson
             payment.is_balance_payment = payment.payment_method == 'balance'
