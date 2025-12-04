@@ -4,7 +4,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=0.5, user-scalable=yes, shrink-to-fit=yes">
     <title>{% block title %}Tutoring System{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="/static/icons/favicon.ico?v=2">
     <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png?v=2">
@@ -83,6 +83,13 @@
             box-sizing: border-box;
         }
 
+        html {
+            width: 100%;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            overflow-x: hidden;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
             background: var(--bg);
@@ -90,11 +97,19 @@
             line-height: 1.6;
             transition: background-color 0.3s ease, color 0.3s ease;
             min-height: 100vh;
+            width: 100%;
+            position: relative;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
         }
 
         .app-layout {
             display: flex;
             min-height: 100vh;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         /* Sidebar */
@@ -257,6 +272,9 @@
             margin-left: 280px;
             min-height: 100vh;
             background: var(--bg);
+            width: calc(100% - 280px);
+            max-width: calc(100% - 280px);
+            overflow-x: hidden;
         }
 
         .main-inner {
@@ -264,6 +282,8 @@
             margin: 0 auto;
             padding: 32px;
             padding-top: 32px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .content {
@@ -436,9 +456,28 @@
             }
             
             /* Дополнительная защита от масштабирования */
+            html {
+                overflow-x: hidden;
+                width: 100%;
+                -webkit-text-size-adjust: 100%;
+            }
+            
             body {
                 touch-action: manipulation;
                 -webkit-text-size-adjust: 100%;
+                overflow-x: hidden;
+                width: 100%;
+                position: relative;
+            }
+            
+            /* Убеждаемся, что все элементы не выходят за пределы экрана */
+            * {
+                max-width: 100%;
+            }
+            
+            img, table, video, iframe {
+                max-width: 100%;
+                height: auto;
             }
         }
 
@@ -653,15 +692,30 @@
 
             .main-shell {
                 margin-left: 0;
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
             }
 
             .main-inner {
                 padding: 16px;
                 padding-top: 75px;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
             }
 
             .content {
                 padding: 20px;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .app-layout {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
             }
 
             .page-header {
@@ -958,12 +1012,31 @@
             function fixViewport() {
                 const viewport = document.querySelector('meta[name="viewport"]');
                 if (viewport) {
-                    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no');
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=0.5, user-scalable=yes, shrink-to-fit=yes');
                 }
             }
             
+            // Фиксируем сразу при загрузке
             fixViewport();
+            
+            // Фиксируем при полной загрузке страницы
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', fixViewport);
+            } else {
+                fixViewport();
+            }
+            
+            // Фиксируем при изменении ориентации
             window.addEventListener('orientationchange', function() {
+                setTimeout(function() {
+                    fixViewport();
+                    // Дополнительная фиксация через небольшую задержку
+                    setTimeout(fixViewport, 200);
+                }, 100);
+            });
+            
+            // Фиксируем при изменении размера окна
+            window.addEventListener('resize', function() {
                 setTimeout(fixViewport, 100);
             });
         })();
