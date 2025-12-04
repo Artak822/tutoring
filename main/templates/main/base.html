@@ -4,7 +4,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <title>{% block title %}Tutoring System{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="/static/icons/favicon.ico?v=2">
     <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png?v=2">
@@ -425,9 +425,20 @@
             input[type="date"],
             input[type="time"],
             input[type="password"],
+            input[type="tel"],
+            input[type="url"],
             textarea,
             select {
                 font-size: 16px !important;
+                -webkit-appearance: none;
+                appearance: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            /* Дополнительная защита от масштабирования */
+            body {
+                touch-action: manipulation;
+                -webkit-text-size-adjust: 100%;
             }
         }
 
@@ -918,6 +929,45 @@
     </div>
     
     <script>
+        // Предотвращаем автоматическое увеличение масштаба на мобильных устройствах
+        (function() {
+            // Предотвращаем двойной тап для увеличения
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+            
+            // Предотвращаем жесты масштабирования
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('gesturechange', function(e) {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('gestureend', function(e) {
+                e.preventDefault();
+            });
+            
+            // Фиксируем viewport при загрузке
+            function fixViewport() {
+                const viewport = document.querySelector('meta[name="viewport"]');
+                if (viewport) {
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no');
+                }
+            }
+            
+            fixViewport();
+            window.addEventListener('orientationchange', function() {
+                setTimeout(fixViewport, 100);
+            });
+        })();
+        
         document.addEventListener('DOMContentLoaded', function() {
             const html = document.documentElement;
             const themeToggle = document.getElementById('theme-toggle');
