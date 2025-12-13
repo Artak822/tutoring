@@ -29,7 +29,7 @@ def student_list(request):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     students = Student.objects.filter(tutor=tutor, is_active=True)
     students_count = students.count()
     return render(request, 'main/student_list.html', {
@@ -44,7 +44,7 @@ def student_detail(request, pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     student = get_object_or_404(Student, pk=pk, tutor=tutor)
     
     # Получаем все занятия ученика с информацией о посещаемости и оплате
@@ -103,7 +103,7 @@ def student_create(request):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     if request.method == 'POST':
         form = StudentForm(request.POST)
         if form.is_valid():
@@ -126,7 +126,7 @@ def student_edit(request, pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     student = get_object_or_404(Student, pk=pk, tutor=tutor)
     if request.method == 'POST':
         form = StudentForm(request.POST, instance=student)
@@ -149,7 +149,7 @@ def student_delete(request, pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     student = get_object_or_404(Student, pk=pk, tutor=tutor)
     if request.method == 'POST':
         student_name = str(student)
@@ -165,7 +165,7 @@ def calendar_view(request):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     # Получаем год и месяц из параметров или используем текущие
     now = timezone.now()
     try:
@@ -382,7 +382,7 @@ def lesson_list(request):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     lessons = Lesson.objects.filter(tutor=tutor).order_by('-date', '-time')
     return render(request, 'main/lesson_list.html', {'lessons': lessons})
 
@@ -393,7 +393,7 @@ def lesson_detail(request, pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     lesson = get_object_or_404(Lesson, pk=pk, tutor=tutor)
     attendances = Attendance.objects.filter(lesson=lesson)
     payments = Payment.objects.filter(lesson=lesson)
@@ -407,11 +407,25 @@ def lesson_detail(request, pk):
     for student in lesson.students.all():
         attendance = attendance_dict.get(student.pk)
         payment = payment_dict.get(student.pk)
+        
+        # Проверяем, была ли списана сумма с предоплаты на долги при создании этого платежа
+        debt_paid_amount = None
+        if payment:
+            session_key = f'debt_paid_{pk}_{student.pk}'
+            if session_key in request.session:
+                try:
+                    debt_paid_amount = Decimal(request.session[session_key])
+                    # Удаляем из сессии после использования
+                    del request.session[session_key]
+                except (ValueError, InvalidOperation):
+                    pass
+        
         students_data.append({
             'student': student,
             'attendance': attendance,
             'payment': payment,
-            'has_debt': attendance and attendance.status == 'present' and not payment and lesson.lesson_price > 0
+            'has_debt': attendance and attendance.status == 'present' and not payment and lesson.lesson_price > 0,
+            'debt_paid_amount': debt_paid_amount
         })
     
     return render(request, 'main/lesson_detail.html', {
@@ -430,7 +444,7 @@ def lesson_create(request):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     
     # Получаем дату из GET параметра, если есть
     initial_date = request.GET.get('date', None)
@@ -458,7 +472,7 @@ def lesson_edit(request, pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     lesson = get_object_or_404(Lesson, pk=pk, tutor=tutor)
     if request.method == 'POST':
         form = LessonForm(request.POST, instance=lesson, tutor=tutor)
@@ -481,7 +495,7 @@ def lesson_delete(request, pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     lesson = get_object_or_404(Lesson, pk=pk, tutor=tutor)
     if request.method == 'POST':
         lesson_date = lesson.date
@@ -497,7 +511,7 @@ def mark_attendance(request, lesson_pk, student_pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     lesson = get_object_or_404(Lesson, pk=lesson_pk, tutor=tutor)
     student = get_object_or_404(Student, pk=student_pk, tutor=tutor)
     
@@ -574,7 +588,7 @@ def mark_payment(request, lesson_pk, student_pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     lesson = get_object_or_404(Lesson, pk=lesson_pk, tutor=tutor)
     student = get_object_or_404(Student, pk=student_pk, tutor=tutor)
     
@@ -633,25 +647,27 @@ def mark_payment(request, lesson_pk, student_pk):
             # Сохраняем оплату (сумма уже проверена выше, если была 0, то оплата удалена)
             payment.student = student
             payment.lesson = lesson
-            payment.is_balance_payment = payment.payment_method == 'balance'
+            # Теперь способ оплаты не может быть 'balance' (убрали из формы)
+            payment.is_balance_payment = False
             payment.save()
             
-            if payment.is_balance_payment:
-                # Автоматические оплаты создаются системой и не влияют на баланс дополнительно
-                pass
-            else:
-                # Если оплата ранее была списана с предоплаты, возвращаем средства
-                if was_balance_payment:
-                    student.add_prepaid_balance(lesson.lesson_price)
-                student.update_overpayment_balance(lesson, previous_amount, payment.amount)
-                
-                # Автоматически погашаем долг с предоплаты, если есть средства
-                paid_lessons = student.auto_pay_debt_from_prepaid()
-                if paid_lessons:
-                    lessons_count = len(paid_lessons)
-                    total_amount = sum(lesson.lesson_price for lesson in paid_lessons)
-                    messages.info(request, 
-                        f'Автоматически погашено {lessons_count} долг(ов) на сумму {total_amount} руб. с предоплаты.')
+            # Если оплата ранее была списана с предоплаты, возвращаем средства
+            if was_balance_payment:
+                student.add_prepaid_balance(lesson.lesson_price)
+            
+            student.update_overpayment_balance(lesson, previous_amount, payment.amount)
+            
+            # Автоматически погашаем долг с предоплаты, если есть средства
+            paid_lessons = student.auto_pay_debt_from_prepaid()
+            debt_paid_amount = Decimal('0.00')
+            if paid_lessons:
+                lessons_count = len(paid_lessons)
+                debt_paid_amount = sum(lesson.lesson_price for lesson in paid_lessons)
+                messages.info(request, 
+                    f'Автоматически погашено {lessons_count} долг(ов) на сумму {debt_paid_amount} руб. с предоплаты.')
+                # Сохраняем информацию о списанных долгах в сессии для отображения в деталях занятия
+                session_key = f'debt_paid_{lesson_pk}_{student_pk}'
+                request.session[session_key] = str(debt_paid_amount)
             
             if existing_payment:
                 messages.success(request, f'Оплата для {student} обновлена.')
@@ -681,7 +697,7 @@ def mark_payment(request, lesson_pk, student_pk):
 def register(request):
     """Регистрация нового репетитора"""
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('calendar')
     
     if request.method == 'POST':
         form = TutorRegistrationForm(request.POST)
@@ -693,7 +709,7 @@ def register(request):
             if user:
                 login(request, user)
                 messages.success(request, f'Добро пожаловать, {user.get_full_name() or username}!')
-                return redirect('dashboard')
+                return redirect('calendar')
     else:
         form = TutorRegistrationForm()
     return render(request, 'main/register.html', {'form': form})
@@ -705,7 +721,7 @@ class TutorLoginView(LoginView):
     redirect_authenticated_user = True
     
     def get_success_url(self):
-        return reverse('dashboard')
+        return reverse('calendar')
 
 
 @login_required
@@ -785,7 +801,7 @@ def profit_report(request):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
 
     today = timezone.now().date()
     # По умолчанию показываем текущий месяц
@@ -861,7 +877,7 @@ def students_debt_list(request):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     
     # Список всех долгов (ученики с долгами)
     students_with_debts = []
@@ -890,7 +906,7 @@ def recurring_lesson_create(request):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     
     # Получаем день недели из GET параметра (0=Пн, 6=Вс)
     weekday_str = request.GET.get('weekday', None)
@@ -981,7 +997,7 @@ def group_list(request):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     groups = StudentGroup.objects.filter(tutor=tutor, is_active=True)
     return render(request, 'main/group_list.html', {'groups': groups})
 
@@ -992,7 +1008,7 @@ def group_detail(request, pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     group = get_object_or_404(StudentGroup, pk=pk, tutor=tutor)
     students = group.students.filter(is_active=True).order_by('last_name', 'first_name')
     return render(request, 'main/group_detail.html', {
@@ -1007,7 +1023,7 @@ def group_create(request):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     if request.method == 'POST':
         form = StudentGroupForm(request.POST, tutor=tutor)
         if form.is_valid():
@@ -1031,7 +1047,7 @@ def group_edit(request, pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     group = get_object_or_404(StudentGroup, pk=pk, tutor=tutor)
     if request.method == 'POST':
         form = StudentGroupForm(request.POST, instance=group, tutor=tutor)
@@ -1054,7 +1070,7 @@ def group_delete(request, pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     group = get_object_or_404(StudentGroup, pk=pk, tutor=tutor)
     if request.method == 'POST':
         group_name = group.name
@@ -1070,7 +1086,7 @@ def clear_all_debts(request, pk):
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
-        return redirect('dashboard')
+        return redirect('calendar')
     
     student = get_object_or_404(Student, pk=pk, tutor=tutor)
     
@@ -1102,20 +1118,47 @@ def clear_all_debts(request, pk):
             payment_date = form.cleaned_data['payment_date']
             notes = form.cleaned_data['notes']
             
-            # Создаем платежи для всех неоплаченных занятий
+            # Сначала автоматически погашаем долги с предоплаты, если есть средства
+            paid_from_balance = student.auto_pay_debt_from_prepaid()
+            paid_from_balance_lessons = [lesson for lesson in paid_from_balance]
+            paid_from_balance_amount = sum(lesson.lesson_price for lesson in paid_from_balance_lessons)
+            
+            # Обновляем список неоплаченных занятий (исключаем те, что уже оплачены с предоплаты)
+            remaining_unpaid_lessons = [lesson for lesson in unpaid_lessons if lesson not in paid_from_balance_lessons]
+            
+            # Создаем платежи для оставшихся неоплаченных занятий
             payments_created = 0
-            for lesson in unpaid_lessons:
+            for lesson in remaining_unpaid_lessons:
                 Payment.objects.create(
                     student=student,
                     lesson=lesson,
                     amount=lesson.lesson_price,
                     payment_date=payment_date,
                     payment_method=payment_method,
-                    notes=notes
+                    notes=notes,
+                    is_balance_payment=False
                 )
                 payments_created += 1
+                # Обновляем баланс переплаты
+                student.update_overpayment_balance(lesson, Decimal('0.00'), lesson.lesson_price)
             
-            messages.success(request, f'Все долги ({total_debt} руб.) успешно погашены. Создано платежей: {payments_created}.')
+            # Формируем сообщения
+            messages_list = []
+            if paid_from_balance_lessons:
+                messages_list.append(
+                    f'Автоматически погашено {len(paid_from_balance_lessons)} долг(ов) на сумму {paid_from_balance_amount} руб. с предоплаты.'
+                )
+            if payments_created > 0:
+                remaining_debt = sum(lesson.lesson_price for lesson in remaining_unpaid_lessons)
+                messages_list.append(
+                    f'Создано платежей: {payments_created} на сумму {remaining_debt} руб.'
+                )
+            
+            if messages_list:
+                for msg in messages_list:
+                    messages.info(request, msg)
+            
+            messages.success(request, f'Все долги ({total_debt} руб.) успешно погашены.')
             return redirect('student_detail', pk=pk)
     else:
         # Устанавливаем начальные данные с сегодняшней датой

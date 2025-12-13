@@ -4,7 +4,7 @@ from django.views.decorators.http import require_http_methods
 from . import views
 
 urlpatterns = [
-    path('', views.dashboard, name='dashboard'),
+    path('', views.calendar_view, name='calendar'),
     path('register/', views.register, name='register'),
     path('login/', views.TutorLoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
@@ -20,7 +20,6 @@ urlpatterns = [
     path('student/<int:pk>/edit/', views.student_edit, name='student_edit'),
     path('student/<int:pk>/delete/', views.student_delete, name='student_delete'),
     path('student/<int:pk>/clear-debts/', views.clear_all_debts, name='clear_all_debts'),
-    path('calendar/', views.calendar_view, name='calendar'),
     path('lessons/', views.lesson_list, name='lesson_list'),
     path('lesson/create/', views.lesson_create, name='lesson_create'),
     path('lesson/create-recurring/', views.recurring_lesson_create, name='recurring_lesson_create'),

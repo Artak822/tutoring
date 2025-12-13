@@ -37,91 +37,180 @@
         <h3 class="card-title">Посещаемость и оплаты</h3>
     </div>
     {% if students_data %}
-    <div style="overflow-x: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Ученик</th>
-                    <th>Посещаемость</th>
-                    <th>Оплата</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in students_data %}
-                <tr>
-                    <td>
-                        <a href="{% url 'student_detail' item.student.pk %}" style="font-weight: 600; color: var(--text); text-decoration: none;">
-                            {{ item.student.last_name }} {{ item.student.first_name }}
-                        </a>
-                    </td>
-                    <td>
-                        {% if item.attendance %}
-                            {% if item.attendance.status == 'present' %}
-                                <span style="color: var(--success); font-weight: 600;">Присутствовал</span>
-                            {% else %}
-                                <span style="color: var(--danger); font-weight: 600;">Отсутствовал</span>
-                            {% endif %}
-                        {% else %}
-                            <a href="{% url 'mark_attendance' lesson.pk item.student.pk %}" class="btn btn-sm">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                    <polyline points="22 4 12 14.01 9 11.01"/>
-                                </svg>
-                                Отметить
+    <!-- Десктопная версия -->
+    <div class="desktop-table">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ученик</th>
+                        <th>Посещаемость</th>
+                        <th>Оплата</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in students_data %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'student_detail' item.student.pk %}" style="font-weight: 600; color: var(--text); text-decoration: none;">
+                                {{ item.student.last_name }} {{ item.student.first_name }}
                             </a>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.payment %}
-                            <span style="color: var(--success); font-weight: 600;">
-                                {{ item.payment.amount|floatformat:0 }} ₽
-                                {% if item.payment.is_balance_payment %}
-                                    <span style="font-size: 12px; color: var(--text-muted); display: block; margin-top: 2px;">(с предоплаты)</span>
-                                {% endif %}
-                            </span>
-                        {% elif item.attendance and item.attendance.status == 'present' %}
-                            {% if lesson.lesson_price > 0 %}
-                                <a href="{% url 'mark_payment' lesson.pk item.student.pk %}" class="btn btn-sm">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="12" y1="1" x2="12" y2="23"/>
-                                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                                    </svg>
-                                    Оплатить
-                                </a>
-                            {% else %}
-                                <span style="color: var(--text-muted);">Бесплатно</span>
-                            {% endif %}
-                        {% else %}
-                            <span style="color: var(--text-muted);">—</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        </td>
+                        <td>
                             {% if item.attendance %}
-                                <a href="{% url 'mark_attendance' lesson.pk item.student.pk %}" class="btn btn-sm btn-secondary">
+                                {% if item.attendance.status == 'present' %}
+                                    <span style="color: var(--success); font-weight: 600;">Присутствовал</span>
+                                {% else %}
+                                    <span style="color: var(--danger); font-weight: 600;">Отсутствовал</span>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'mark_attendance' lesson.pk item.student.pk %}" class="btn btn-sm">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
                                     </svg>
-                                    Изменить посещаемость
+                                    Отметить
                                 </a>
                             {% endif %}
+                        </td>
+                        <td>
                             {% if item.payment %}
-                                <a href="{% url 'mark_payment' lesson.pk item.student.pk %}" class="btn btn-sm btn-secondary">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                    </svg>
-                                    Изменить оплату
-                                </a>
+                                <span style="color: var(--success); font-weight: 600;">
+                                    {{ item.payment.amount|floatformat:0 }} ₽
+                                    {% if item.payment.is_balance_payment %}
+                                        <span style="font-size: 12px; color: var(--text-muted); display: block; margin-top: 2px;">(с предоплаты)</span>
+                                    {% endif %}
+                                    {% if item.debt_paid_amount and item.debt_paid_amount > 0 %}
+                                        <span style="font-size: 12px; color: var(--primary); display: block; margin-top: 2px;">{{ item.debt_paid_amount|floatformat:0 }} ₽ списано с предоплаты на долги</span>
+                                    {% endif %}
+                                </span>
+                            {% elif item.attendance and item.attendance.status == 'present' %}
+                                {% if lesson.lesson_price > 0 %}
+                                    <a href="{% url 'mark_payment' lesson.pk item.student.pk %}" class="btn btn-sm">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="12" y1="1" x2="12" y2="23"/>
+                                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                        </svg>
+                                        Оплатить
+                                    </a>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">Бесплатно</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: var(--text-muted);">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                {% if item.attendance %}
+                                    <a href="{% url 'mark_attendance' lesson.pk item.student.pk %}" class="btn btn-sm btn-secondary">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                        Изменить посещаемость
+                                    </a>
+                                {% endif %}
+                                {% if item.payment %}
+                                    <a href="{% url 'mark_payment' lesson.pk item.student.pk %}" class="btn btn-sm btn-secondary">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                        Изменить оплату
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Мобильная версия -->
+    <div class="mobile-cards">
+        {% for item in students_data %}
+        <div class="mobile-card-item">
+            <div style="margin-bottom: 12px;">
+                <a href="{% url 'student_detail' item.student.pk %}" style="font-weight: 600; color: var(--text); text-decoration: none; font-size: 16px; display: block; margin-bottom: 12px;">
+                    {{ item.student.last_name }} {{ item.student.first_name }}
+                </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
+                <div>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px 0;">Посещаемость</p>
+                    {% if item.attendance %}
+                        {% if item.attendance.status == 'present' %}
+                            <span style="color: var(--success); font-weight: 600;">Присутствовал</span>
+                        {% else %}
+                            <span style="color: var(--danger); font-weight: 600;">Отсутствовал</span>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'mark_attendance' lesson.pk item.student.pk %}" class="btn btn-sm" style="width: 100%; justify-content: center;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Отметить
+                        </a>
+                    {% endif %}
+                </div>
+                <div>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px 0;">Оплата</p>
+                    {% if item.payment %}
+                        <div>
+                            <span style="color: var(--success); font-weight: 600; font-size: 18px;">
+                                {{ item.payment.amount|floatformat:0 }} ₽
+                            </span>
+                            {% if item.payment.is_balance_payment %}
+                                <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px;">(с предоплаты)</span>
+                            {% endif %}
+                            {% if item.debt_paid_amount and item.debt_paid_amount > 0 %}
+                                <span style="font-size: 11px; color: var(--primary); display: block; margin-top: 2px;">{{ item.debt_paid_amount|floatformat:0 }} ₽ списано с предоплаты на долги</span>
                             {% endif %}
                         </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    {% elif item.attendance and item.attendance.status == 'present' %}
+                        {% if lesson.lesson_price > 0 %}
+                            <a href="{% url 'mark_payment' lesson.pk item.student.pk %}" class="btn btn-sm" style="width: 100%; justify-content: center;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"/>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                                Оплатить
+                            </a>
+                        {% else %}
+                            <span style="color: var(--text-muted);">Бесплатно</span>
+                        {% endif %}
+                    {% else %}
+                        <span style="color: var(--text-muted);">—</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                {% if item.attendance %}
+                    <a href="{% url 'mark_attendance' lesson.pk item.student.pk %}" class="btn btn-sm btn-secondary" style="width: 100%; justify-content: center;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        Изменить посещаемость
+                    </a>
+                {% endif %}
+                {% if item.payment %}
+                    <a href="{% url 'mark_payment' lesson.pk item.student.pk %}" class="btn btn-sm btn-secondary" style="width: 100%; justify-content: center;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        Изменить оплату
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
     </div>
     {% else %}
     <p style="text-align: center; color: var(--text-secondary); padding: 32px;">Нет учеников</p>
@@ -187,5 +276,73 @@
     </div>
 </div>
 
+<style>
+@media (max-width: 768px) {
+    .desktop-table {
+        display: none;
+    }
+    
+    .mobile-cards {
+        display: flex;
+        overflow-x: auto;
+        gap: 16px;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: thin;
+    }
+    
+    .mobile-cards::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    .mobile-cards::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+        border-radius: 3px;
+    }
+    
+    .mobile-cards::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 3px;
+    }
+    
+    .mobile-card-item {
+        flex: 0 0 calc(100% - 32px);
+        min-width: calc(100% - 32px);
+        max-width: calc(100% - 32px);
+        margin-bottom: 0;
+        padding: 16px;
+        scroll-snap-align: start;
+        background: var(--surface);
+        border: 1px solid var(--primary);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .page-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .page-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Карточки статистики и информации на мобильных */
+    div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+}
 
+@media (min-width: 769px) {
+    .desktop-table {
+        display: block;
+    }
+    
+    .mobile-cards {
+        display: none;
+    }
+}
+</style>
 {% endblock %}

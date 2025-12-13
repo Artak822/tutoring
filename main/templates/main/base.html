@@ -291,7 +291,7 @@
             border-radius: var(--radius-lg);
             padding: 32px;
             box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
+            border: 1px solid var(--primary);
         }
 
         /* Messages */
@@ -543,7 +543,7 @@
             background: var(--surface);
             border-radius: var(--radius-sm);
             overflow: hidden;
-            border: 1px solid var(--border);
+            border: 1px solid var(--primary);
         }
 
         thead {
@@ -574,7 +574,7 @@
         /* Cards */
         .card {
             background: var(--surface);
-            border: 1px solid var(--border);
+            border: 1px solid var(--primary);
             border-radius: var(--radius);
             padding: 24px;
             box-shadow: var(--shadow-sm);
@@ -938,7 +938,7 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h1>
-                    <a href="{% url 'dashboard' %}">
+                    <a href="{% url 'calendar' %}">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                             <polyline points="9 22 9 12 15 12 15 22"/>
@@ -951,22 +951,30 @@
             <div class="sidebar-main">
                 {% if user.is_authenticated %}
                     <nav class="sidebar-nav">
-                        <a href="{% url 'dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>
+                        <a href="{% url 'calendar' %}" {% if request.resolver_match.url_name == 'calendar' %}class="active"{% endif %}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="7" height="7"/>
-                                <rect x="14" y="3" width="7" height="7"/>
-                                <rect x="14" y="14" width="7" height="7"/>
-                                <rect x="3" y="14" width="7" height="7"/>
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
                             </svg>
-                            <span>Дашборд</span>
+                            <span>Календарь</span>
                         </a>
-                        <a href="{% url 'student_list' %}" {% if 'student' in request.resolver_match.url_name %}class="active"{% endif %}>
+                        <a href="{% url 'student_list' %}" {% if request.resolver_match.url_name == 'student_list' or request.resolver_match.url_name == 'student_detail' or request.resolver_match.url_name == 'student_create' or request.resolver_match.url_name == 'student_edit' %}class="active"{% endif %}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                 <circle cx="9" cy="7" r="4"/>
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
                             </svg>
                             <span>Ученики</span>
+                        </a>
+                        <a href="{% url 'students_debt_list' %}" {% if request.resolver_match.url_name == 'students_debt_list' %}class="active"{% endif %}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            <span>Долги</span>
                         </a>
                         <a href="{% url 'group_list' %}" {% if 'group' in request.resolver_match.url_name %}class="active"{% endif %}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -976,15 +984,6 @@
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                             </svg>
                             <span>Группы</span>
-                        </a>
-                        <a href="{% url 'calendar' %}" {% if request.resolver_match.url_name == 'calendar' %}class="active"{% endif %}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                                <line x1="16" y1="2" x2="16" y2="6"/>
-                                <line x1="8" y1="2" x2="8" y2="6"/>
-                                <line x1="3" y1="10" x2="21" y2="10"/>
-                            </svg>
-                            <span>Календарь</span>
                         </a>
                         <a href="{% url 'profit_report' %}" {% if request.resolver_match.url_name == 'profit_report' %}class="active"{% endif %}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1021,7 +1020,7 @@
             <div class="sidebar-footer">
                 <div class="sidebar-user">
                     <span class="sidebar-user-name" style="margin-left: 4px;">
-                        <a href="{% url 'dashboard' %}">{{ user.get_full_name|default:user.username }}</a>
+                        <a href="{% url 'calendar' %}">{{ user.get_full_name|default:user.username }}</a>
                     </span>
                     <button class="theme-toggle" id="theme-toggle" aria-label="Переключить тему">
                         <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

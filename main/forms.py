@@ -387,14 +387,10 @@ class PaymentForm(forms.ModelForm):
         student = kwargs.pop('student', None)
         super().__init__(*args, **kwargs)
         
-        # Скрываем способ "Списано с предоплаты" в ручной форме,
-        # но оставляем его для отображения автоплатежей
-        current_method = None
-        if self.instance and self.instance.pk:
-            current_method = self.instance.payment_method
+        # Убираем способ "Списано с предоплаты" из выбора - теперь это происходит автоматически
         choices = [
             choice for choice in Payment.PAYMENT_METHOD_CHOICES
-            if choice[0] != 'balance' or current_method == 'balance'
+            if choice[0] != 'balance'
         ]
         self.fields['payment_method'].choices = choices
         
@@ -504,7 +500,7 @@ class RecurringLessonForm(forms.Form):
 class ClearAllDebtsForm(forms.Form):
     """Форма для погашения всех долгов ученика"""
     payment_method = forms.ChoiceField(
-        choices=Payment.PAYMENT_METHOD_CHOICES,
+        choices=[choice for choice in Payment.PAYMENT_METHOD_CHOICES if choice[0] != 'balance'],
         widget=forms.RadioSelect(attrs={
             'class': 'form-radio'
         }),
