@@ -211,6 +211,20 @@
         background: var(--bg-secondary);
         color: var(--text);
     }
+
+    .popover-open .calendar-table td:hover:not(.empty) {
+        background: var(--surface);
+        transform: none;
+        box-shadow: none;
+    }
+
+    .popover-open .calendar-table td:hover:not(.empty) .day-number,
+    .popover-open .calendar-table td:hover:not(.empty) .lesson-item,
+    .popover-open .calendar-table td:hover:not(.empty) .lesson-item a,
+    .popover-open .calendar-table td:hover:not(.empty) .lesson-count {
+        color: inherit;
+        background: inherit;
+    }
     
     .calendar-table td.empty {
         cursor: default;
@@ -359,6 +373,79 @@
         background: var(--bg-tertiary);
         border-radius: 4px;
         display: inline-block;
+        border: none;
+        cursor: pointer;
+    }
+
+    .lessons-popover {
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        top: 28px;
+        display: none;
+        background: var(--surface);
+        color: var(--text);
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border);
+        z-index: 20;
+    }
+
+    .lessons-popover.is-open {
+        display: block;
+    }
+
+    .lessons-popover-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .lessons-popover-close {
+        background: transparent;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        color: var(--text-secondary);
+    }
+
+    .lessons-popover-list {
+        max-height: 240px;
+        overflow: auto;
+        padding: 8px 10px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .lessons-popover-item {
+        text-decoration: none;
+        color: var(--text);
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        transition: all 0.2s ease;
+        font-size: 12px;
+    }
+
+    .lessons-popover-item:hover {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+    }
+
+    .lessons-popover-item-time {
+        font-weight: 600;
+        margin-right: 6px;
+    }
+
+    .modal-open {
+        overflow: hidden;
     }
     
     /* Мобильная версия - список вместо таблицы */
@@ -658,7 +745,35 @@
                         </div>
                         {% endfor %}
                         {% if day.lessons|length > 3 %}
-                        <div class="lesson-count">+{{ day.lessons|length|add:"-3" }} еще</div>
+                        <button
+                            class="lesson-count"
+                            type="button"
+                            onclick="event.stopPropagation(); toggleLessonsPopover('popover-{{ day.date|date:'Y-m-d' }}');"
+                            aria-controls="popover-{{ day.date|date:'Y-m-d' }}"
+                            aria-haspopup="dialog"
+                        >
+                            +{{ day.lessons|length|add:"-3" }} еще
+                        </button>
+
+                        <div class="lessons-popover" id="popover-{{ day.date|date:'Y-m-d' }}" aria-hidden="true" onclick="event.stopPropagation();">
+                            <div class="lessons-popover-header">
+                                Занятия {{ day.date|date:"d.m" }}
+                                <button class="lessons-popover-close" type="button" onclick="closeLessonsPopover('popover-{{ day.date|date:'Y-m-d' }}')" aria-label="Закрыть">
+                                    ×
+                                </button>
+                            </div>
+                            <div class="lessons-popover-list">
+                                {% for lesson in day.lessons %}
+                                <a class="lessons-popover-item" href="{% url 'lesson_detail' lesson.pk %}">
+                                    <span class="lessons-popover-item-time">{{ lesson.time|time:"H:i" }}</span>
+                                    {% for student in lesson.students.all|slice:":3" %}
+                                        {{ student.last_name }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    {% if lesson.students.count > 3 %}...{% endif %}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
                         {% endif %}
                     {% endif %}
                 </td>
@@ -751,3 +866,61 @@
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+    (function() {
+        function closeAllPopovers() {
+            var openPopovers = document.querySelectorAll('.lessons-popover.is-open');
+            openPopovers.forEach(function(popover) {
+                popover.classList.remove('is-open');
+                popover.setAttribute('aria-hidden', 'true');
+            });
+            document.body.classList.remove('popover-open');
+        }
+
+        function setPopoverState(id, isOpen) {
+            var popover = document.getElementById(id);
+            if (!popover) {
+                return;
+            }
+            if (isOpen) {
+                closeAllPopovers();
+                popover.classList.add('is-open');
+                popover.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('popover-open');
+            } else {
+                popover.classList.remove('is-open');
+                popover.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('popover-open');
+            }
+        }
+
+        window.toggleLessonsPopover = function(id) {
+            var popover = document.getElementById(id);
+            if (!popover) {
+                return;
+            }
+            var isOpen = popover.classList.contains('is-open');
+            setPopoverState(id, !isOpen);
+        };
+
+        window.closeLessonsPopover = function(id) {
+            setPopoverState(id, false);
+        };
+
+        document.addEventListener('click', function(event) {
+            var isInsidePopover = event.target.closest('.lessons-popover');
+            var isTrigger = event.target.closest('.lesson-count');
+            if (!isInsidePopover && !isTrigger) {
+                closeAllPopovers();
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeAllPopovers();
+            }
+        });
+    })();
+</script>
+{% endblock %}
