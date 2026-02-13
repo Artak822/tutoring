@@ -501,7 +501,7 @@ def lesson_delete(request, pk):
         lesson_date = lesson.date
         lesson.delete()
         messages.success(request, f'Занятие от {lesson_date} успешно удалено.')
-        return redirect('lesson_list')
+        return redirect('calendar')
     return render(request, 'main/lesson_confirm_delete.html', {'lesson': lesson})
 
 
