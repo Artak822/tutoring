@@ -58,18 +58,18 @@
     </div>
 
     <div class="form-group">
+        <label class="form-label" for="{{ form.default_price.id_for_label }}">{{ form.default_price.label }}</label>
+        {{ form.default_price }}
+        {{ form.default_price.errors }}
+    </div>
+
+    <div class="form-group">
         <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
         {{ form.notes }}
         {{ form.notes.errors }}
     </div>
 
-    <div class="form-group">
-        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            {{ form.is_active }}
-            <span>{{ form.is_active.label }}</span>
-        </label>
-        {{ form.is_active.errors }}
-    </div>
+    <div style="display: none;">{{ form.is_active }}</div>
 
     <div class="form-actions">
         <button type="submit" class="btn">

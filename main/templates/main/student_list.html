@@ -6,6 +6,12 @@
 <div class="page-header">
     <h1>Ученики</h1>
     <div class="page-actions">
+        <a href="{% url 'student_archive' %}" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>
+            </svg>
+            Архив
+        </a>
         <a href="{% url 'student_create' %}" class="btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="5" x2="12" y2="19"/>

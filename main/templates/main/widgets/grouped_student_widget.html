@@ -118,7 +118,7 @@
         </div>
         <div class="student-items">
             {% for student in group.students.all %}
-            <div class="student-item" data-student-id="{{ student.pk }}" data-group-id="{{ group.pk }}">
+            <div class="student-item" data-student-id="{{ student.pk }}" data-group-id="{{ group.pk }}" data-default-price="{{ student.default_price|default:'' }}">
                 <input type="checkbox" 
                        name="{{ widget.name }}" 
                        value="{{ student.pk }}"
@@ -139,7 +139,7 @@
         <div class="no-group-title">Без группы</div>
         <div class="student-items">
             {% for student in students_without_groups %}
-            <div class="student-item" data-student-id="{{ student.pk }}">
+            <div class="student-item" data-student-id="{{ student.pk }}" data-default-price="{{ student.default_price|default:'' }}">
                 <input type="checkbox" 
                        name="{{ widget.name }}" 
                        value="{{ student.pk }}"

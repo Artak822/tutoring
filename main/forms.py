@@ -93,7 +93,7 @@ class StudentForm(forms.ModelForm):
     
     class Meta:
         model = Student
-        fields = ['first_name', 'last_name', 'phone', 'telegram', 'grade', 'notes', 'is_active']
+        fields = ['first_name', 'last_name', 'phone', 'telegram', 'grade', 'default_price', 'notes', 'is_active']
         exclude = ['tutor']
         widgets = {
             'first_name': forms.TextInput(attrs={
@@ -116,6 +116,12 @@ class StudentForm(forms.ModelForm):
                 'class': 'form-input',
                 'placeholder': 'Введите класс'
             }),
+            'default_price': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'min': '0',
+                'step': '0.01',
+                'placeholder': 'Цена за занятие'
+            }),
             'notes': forms.Textarea(attrs={
                 'class': 'form-textarea',
                 'rows': 5,
@@ -131,6 +137,7 @@ class StudentForm(forms.ModelForm):
             'phone': 'Телефон',
             'telegram': 'Телеграм',
             'grade': 'Класс',
+            'default_price': 'Цена по умолчанию',
             'notes': 'Заметки',
             'is_active': 'Активен',
         }

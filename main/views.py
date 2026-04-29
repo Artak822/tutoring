@@ -145,18 +145,45 @@ def student_edit(request, pk):
 
 @login_required
 def student_delete(request, pk):
-    """Удаление ученика"""
+    """Архивирование ученика (мягкое удаление)"""
     tutor = get_tutor(request)
     if not tutor:
         messages.error(request, 'Профиль репетитора не найден.')
         return redirect('calendar')
     student = get_object_or_404(Student, pk=pk, tutor=tutor)
     if request.method == 'POST':
-        student_name = str(student)
-        student.delete()
-        messages.success(request, f'Ученик {student_name} успешно удален.')
+        student.is_active = False
+        student.save(update_fields=['is_active'])
+        messages.success(request, f'Ученик {student} перемещён в архив.')
         return redirect('student_list')
     return render(request, 'main/student_confirm_delete.html', {'student': student})
+
+
+@login_required
+def student_archive(request):
+    """Список архивных учеников"""
+    tutor = get_tutor(request)
+    if not tutor:
+        messages.error(request, 'Профиль репетитора не найден.')
+        return redirect('calendar')
+    students = Student.objects.filter(tutor=tutor, is_active=False)
+    return render(request, 'main/student_archive.html', {'students': students})
+
+
+@login_required
+def student_restore(request, pk):
+    """Восстановление ученика из архива"""
+    tutor = get_tutor(request)
+    if not tutor:
+        messages.error(request, 'Профиль репетитора не найден.')
+        return redirect('calendar')
+    student = get_object_or_404(Student, pk=pk, tutor=tutor, is_active=False)
+    if request.method == 'POST':
+        student.is_active = True
+        student.save(update_fields=['is_active'])
+        messages.success(request, f'Ученик {student} восстановлен.')
+        return redirect('student_archive')
+    return render(request, 'main/student_confirm_restore.html', {'student': student})
 
 
 @login_required

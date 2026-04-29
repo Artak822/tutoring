@@ -103,20 +103,57 @@ document.addEventListener('DOMContentLoaded', function() {
     // Получаем дату из URL параметров
     const urlParams = new URLSearchParams(window.location.search);
     const dateParam = urlParams.get('date');
-    
+
     if (dateParam) {
-        // Пробуем найти поле даты по id
         const dateInputById = document.getElementById('{{ form.date.id_for_label }}');
         if (dateInputById) {
             dateInputById.value = dateParam;
         } else {
-            // Если не нашли по id, ищем по name или type
             const dateInput = document.querySelector('input[type="date"][name="date"]');
             if (dateInput) {
                 dateInput.value = dateParam;
             }
         }
     }
+
+    // Автозаполнение цены на основе выбранных учеников
+    const priceInput = document.querySelector('input[name="lesson_price"]');
+    const isNewLesson = !{{ lesson.pk|default:"false" }};
+
+    function updatePriceFromStudents() {
+        if (!priceInput || !isNewLesson) return;
+
+        const checkedItems = document.querySelectorAll('.student-item input[type="checkbox"]:checked');
+        if (checkedItems.length === 0) return;
+
+        const prices = Array.from(checkedItems).map(cb => {
+            const item = cb.closest('.student-item');
+            return item ? item.dataset.defaultPrice : '';
+        }).filter(p => p !== '');
+
+        if (prices.length === 0) return;
+
+        const allSame = prices.every(p => p === prices[0]);
+        if (allSame) {
+            priceInput.value = parseFloat(prices[0]).toFixed(2);
+        } else {
+            priceInput.value = '';
+        }
+    }
+
+    // Вешаем слушатели на все чекбоксы студентов
+    document.querySelectorAll('.student-item').forEach(item => {
+        item.addEventListener('click', function() {
+            setTimeout(updatePriceFromStudents, 0);
+        });
+    });
+
+    // Обработка кликов на заголовок группы
+    document.querySelectorAll('.group-header').forEach(header => {
+        header.addEventListener('click', function() {
+            setTimeout(updatePriceFromStudents, 0);
+        });
+    });
 });
 </script>
 {% endblock %}

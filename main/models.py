@@ -83,6 +83,13 @@ class Student(models.Model):
     grade = models.CharField(max_length=10, blank=True, null=True, verbose_name='Класс')
     notes = models.TextField(blank=True, verbose_name='Заметки')
     is_active = models.BooleanField(default=True, verbose_name='Активен')
+    default_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name='Цена по умолчанию'
+    )
     prepaid_balance = models.DecimalField(
         max_digits=10,
         decimal_places=2,
