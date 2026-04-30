@@ -25,7 +25,7 @@
         {{ form.students.errors }}
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+    <div class="form-grid-2">
         <div class="form-group">
             <label class="form-label" for="{{ form.start_date.id_for_label }}">{{ form.start_date.label }}</label>
             {{ form.start_date }}

@@ -522,54 +522,66 @@
     
     .calendar-week-header {
         display: none;
-        text-align: center;
-        margin-bottom: 20px;
-        padding: 16px;
-        background: var(--bg-secondary);
-        border-radius: 12px;
-        box-shadow: var(--shadow);
-        border: 1px solid var(--border);
+        margin-bottom: 16px;
     }
-    
+
     .calendar-week-nav {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
         gap: 10px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 16px;
+        box-shadow: var(--shadow-sm);
     }
-    
+
     .calendar-week-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--text);
         flex: 1;
         text-align: center;
     }
-    
+
     .calendar-week-nav-btn {
-        min-width: 44px;
-        height: 44px;
+        min-width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 12px;
-        font-size: 20px;
-        transition: all 0.3s ease;
-        box-shadow: var(--shadow);
+        border-radius: 10px;
+        font-size: 18px;
+        transition: all 0.2s ease;
         flex-shrink: 0;
     }
-    
+
     .calendar-week-nav-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
+        transform: translateY(-1px);
     }
-    
+
     .calendar-week-range {
-        font-size: 14px;
-        color: var(--text-secondary);
-        margin-top: 8px;
-        font-weight: 500;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .btn-today {
+        display: block;
+        text-align: center;
+        margin-top: 10px;
+        padding: 9px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--primary);
+        background: var(--primary-light);
+        text-decoration: none;
+        transition: all 0.15s ease;
+        border: 1px solid transparent;
+    }
+
+    .btn-today:hover {
+        background: var(--primary);
+        color: #fff;
     }
     
     .weekday-selector {
@@ -619,44 +631,27 @@
     }
     
     @media (max-width: 768px) {
+        /* Скрываем десктопный хедер с месяцами */
         .calendar-header {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 15px;
+            display: none;
         }
-        
-        .calendar-nav {
-            width: 100%;
-            justify-content: space-between;
-        }
-        
-        .calendar-title {
-            font-size: 24px;
-            text-align: center;
-        }
-        
-        /* Скрываем таблицу на мобильных */
+
+        /* Скрываем таблицу */
         .calendar-table {
             display: none;
         }
-        
+
         /* Показываем мобильную версию */
         .calendar-mobile {
             display: block;
         }
-        
-        .calendar-nav-btn {
-            min-width: 50px;
-            height: 50px;
-            font-size: 24px;
-        }
-        
-        /* Показываем заголовок недели на мобильных */
+
+        /* Показываем заголовок недели */
         .calendar-week-header {
             display: block;
         }
-        
-        /* Показываем селектор дней недели на мобильных */
+
+        /* Показываем селектор повторяющихся занятий */
         .weekday-selector {
             display: block;
         }
@@ -770,7 +765,7 @@
 
 <!-- Мобильная версия - недельный вид -->
 <div class="weekday-selector">
-    <div class="weekday-selector-title">🔄 Создать повторяющиеся занятия</div>
+    <div class="weekday-selector-title">Создать повторяющиеся занятия</div>
     <div class="weekday-buttons">
         <a href="{% url 'recurring_lesson_create' %}?weekday=0" class="weekday-btn">Пн</a>
         <a href="{% url 'recurring_lesson_create' %}?weekday=1" class="weekday-btn">Вт</a>
@@ -784,21 +779,19 @@
 
 <div class="calendar-week-header">
     <div class="calendar-week-nav">
-        <a href="?year={{ prev_week_year }}&month={{ prev_week_month }}&week_offset={{ prev_week_offset }}" class="btn btn-secondary calendar-week-nav-btn">←</a>
+        <a href="?week={{ prev_week_monday|date:'Y-m-d' }}" class="btn btn-secondary calendar-week-nav-btn">←</a>
         <div class="calendar-week-title">
-            Неделя
-            {% if week_start_date and week_end_date %}
             <div class="calendar-week-range">
-                {% if week_start_date.month == week_end_date.month %}
-                    {{ week_start_date|date:"d" }} - {{ week_end_date|date:"d.m.Y" }}
+                {% if mobile_monday.month == mobile_sunday.month %}
+                    {{ mobile_monday|date:"d" }} – {{ mobile_sunday|date:"d.m.Y" }}
                 {% else %}
-                    {{ week_start_date|date:"d.m" }} - {{ week_end_date|date:"d.m.Y" }}
+                    {{ mobile_monday|date:"d.m" }} – {{ mobile_sunday|date:"d.m.Y" }}
                 {% endif %}
             </div>
-            {% endif %}
         </div>
-        <a href="?year={{ next_week_year }}&month={{ next_week_month }}&week_offset={{ next_week_offset }}" class="btn btn-secondary calendar-week-nav-btn">→</a>
+        <a href="?week={{ next_week_monday|date:'Y-m-d' }}" class="btn btn-secondary calendar-week-nav-btn">→</a>
     </div>
+    <a href="{% url 'calendar' %}" class="btn-today">Сегодня</a>
 </div>
 
 <div class="calendar-mobile">

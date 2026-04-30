@@ -2,6 +2,154 @@
 
 {% block title %}Ученики{% endblock %}
 
+{% block extra_css %}
+<style>
+    .student-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .student-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .student-card:hover {
+        border-color: var(--primary);
+        box-shadow: var(--shadow);
+        transform: translateY(-2px);
+    }
+
+    .student-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .student-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: var(--primary-light);
+        color: var(--primary);
+        font-size: 16px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        letter-spacing: 0.02em;
+    }
+
+    .student-card-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1.3;
+        flex: 1;
+    }
+
+    .student-card-grade {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        background: var(--bg-secondary);
+        padding: 3px 8px;
+        border-radius: 20px;
+        flex-shrink: 0;
+    }
+
+    .student-card-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .student-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .student-meta-row svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        opacity: 0.6;
+    }
+
+    .student-meta-row a {
+        color: var(--primary);
+        text-decoration: none;
+    }
+
+    .student-meta-row a:hover {
+        text-decoration: underline;
+    }
+
+    .student-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+    }
+
+    .debt-badge {
+        font-size: 13px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .debt-badge.has-debt {
+        background: rgba(223, 27, 65, 0.1);
+        color: var(--danger);
+    }
+
+    .debt-badge.no-debt {
+        background: var(--bg-secondary);
+        color: var(--text-muted);
+    }
+
+    .student-card-arrow {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--bg-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .student-card:hover .student-card-arrow {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+        .student-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <h1>Ученики</h1>
@@ -23,58 +171,53 @@
 </div>
 
 {% if students %}
-<div class="card">
-    <div class="table-responsive">
-        <table>
-            <thead>
-                <tr>
-                    <th>Имя</th>
-                    <th class="mobile-hide">Телефон</th>
-                    <th class="mobile-hide">Класс</th>
-                    <th class="mobile-hide">Долг</th>
-                    <th class="mobile-hide">Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for student in students %}
-                <tr>
-                    <td>
-                        <div class="student-name-mobile">
-                            <a href="{% url 'student_detail' student.pk %}" class="student-link">
-                                {{ student.last_name }} {{ student.first_name }}
-                            </a>
-                            {% if student.telegram %}
-                                <a href="tg://resolve?domain={{ student.telegram|cut:'@' }}" target="_blank" class="telegram-link" title="Telegram">
-                                    @{{ student.telegram|cut:'@' }}
-                                </a>
-                            {% endif %}
-                        </div>
-                    </td>
-                    <td class="mobile-hide">{{ student.phone|default:"—" }}</td>
-                    <td class="mobile-hide">{{ student.grade|default:"—" }}</td>    
-                    <td class="mobile-hide">
-                        {% with debt=student.get_total_debt %}
-                            {% if debt > 0 %}
-                                <span style="color: var(--danger); font-weight: 600;">{{ debt|floatformat:0 }} ₽</span>
-                            {% else %}
-                                <span style="color: var(--text-muted);">0 ₽</span>
-                            {% endif %}
-                        {% endwith %}
-                    </td>
-                    <td class="mobile-hide">
-                        <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-secondary">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                            Подробнее
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="student-grid">
+    {% for student in students %}
+    <a href="{% url 'student_detail' student.pk %}" class="student-card">
+        <div class="student-card-top">
+            <div class="student-avatar">{{ student.first_name|slice:":1" }}{{ student.last_name|slice:":1" }}</div>
+            <div class="student-card-name">{{ student.last_name }} {{ student.first_name }}</div>
+            {% if student.grade %}
+            <span class="student-card-grade">{{ student.grade }} кл.</span>
+            {% endif %}
+        </div>
+
+        {% if student.phone or student.telegram %}
+        <div class="student-card-meta">
+            {% if student.phone %}
+            <div class="student-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1 19.79 19.79 0 0 1 1.62 4.48 2 2 0 0 1 3.59 2.25h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                {{ student.phone }}
+            </div>
+            {% endif %}
+            {% if student.telegram %}
+            <div class="student-meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+                @{{ student.telegram|cut:"@" }}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="student-card-footer">
+            {% with debt=student.get_total_debt %}
+            <span class="debt-badge {% if debt > 0 %}has-debt{% else %}no-debt{% endif %}">
+                {% if debt > 0 %}Долг: {{ debt|floatformat:0 }} ₽{% else %}Без долга{% endif %}
+            </span>
+            {% endwith %}
+            <div class="student-card-arrow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
 </div>
 {% else %}
 <div class="empty-state">
@@ -88,59 +231,4 @@
     </a>
 </div>
 {% endif %}
-
-<style>
-.student-name-mobile {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.student-link {
-    font-weight: 600;
-    color: var(--text);
-    text-decoration: none;
-    font-size: 15px;
-}
-
-.telegram-link {
-    color: var(--primary);
-    text-decoration: none;
-    font-size: 13px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.telegram-link:hover {
-    text-decoration: underline;
-}
-
-@media (max-width: 768px) {
-    .mobile-hide {
-        display: none;
-    }
-    
-    .student-name-mobile {
-        width: 100%;
-    }
-    
-    table {
-        font-size: 14px;
-    }
-    
-    table td {
-        padding: 12px 8px;
-    }
-    
-    table th {
-        padding: 10px 8px;
-    }
-    
-    .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-}
-</style>
 {% endblock %}

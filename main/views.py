@@ -203,63 +203,74 @@ def calendar_view(request):
         month = now.month
     
     today = now.date()
-    
-    # Получаем параметры для недельного режима (для мобильных)
+
+    # ── Мобильная неделя: параметр ?week=YYYY-MM-DD (понедельник) ──
+    from datetime import timedelta as _td
+    week_param = request.GET.get('week')
     try:
-        week_offset = int(request.GET.get('week_offset', 0))
-    except (ValueError, TypeError):
-        week_offset = 0
-    
-    # Вычисляем предыдущий и следующий месяц
+        mobile_monday = datetime.strptime(week_param, '%Y-%m-%d').date()
+        # Приводим к понедельнику на случай если передали другой день
+        mobile_monday -= _td(days=mobile_monday.weekday())
+    except (TypeError, ValueError):
+        # По умолчанию — понедельник текущей недели
+        mobile_monday = today - _td(days=today.weekday())
+
+    mobile_sunday = mobile_monday + _td(days=6)
+    prev_week_monday = mobile_monday - _td(days=7)
+    next_week_monday = mobile_monday + _td(days=7)
+
+    # Занятия для мобильного вида (7 дней, любой месяц)
+    mobile_lessons = Lesson.objects.filter(
+        tutor=tutor, date__gte=mobile_monday, date__lte=mobile_sunday
+    ).order_by('date', 'time')
+    mobile_lessons_by_date = {}
+    for lesson in mobile_lessons:
+        dk = lesson.date.strftime('%Y-%m-%d')
+        mobile_lessons_by_date.setdefault(dk, []).append(lesson)
+
+    weekday_names = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+    current_week = []
+    for i in range(7):
+        d = mobile_monday + _td(days=i)
+        current_week.append({
+            'date': d,
+            'lessons': mobile_lessons_by_date.get(d.strftime('%Y-%m-%d'), []),
+            'weekday_name': weekday_names[d.weekday()],
+        })
+
+    # ── Десктопный месячный вид ──
     if month == 1:
-        prev_month = 12
-        prev_year = year - 1
+        prev_month, prev_year = 12, year - 1
     else:
-        prev_month = month - 1
-        prev_year = year
-    
+        prev_month, prev_year = month - 1, year
+
     if month == 12:
-        next_month = 1
-        next_year = year + 1
+        next_month, next_year = 1, year + 1
     else:
-        next_month = month + 1
-        next_year = year
-    
-    # Получаем все занятия за месяц
+        next_month, next_year = month + 1, year
+
     first_day = datetime(year, month, 1).date()
     last_day_num = monthrange(year, month)[1]
     last_day = datetime(year, month, last_day_num).date()
-    
-    lessons = Lesson.objects.filter(tutor=tutor, date__gte=first_day, date__lte=last_day).order_by('date', 'time')
-    
-    # Группируем занятия по дням
+
+    desktop_lessons = Lesson.objects.filter(
+        tutor=tutor, date__gte=first_day, date__lte=last_day
+    ).order_by('date', 'time')
     lessons_by_date = {}
-    for lesson in lessons:
-        date_key = lesson.date.strftime('%Y-%m-%d')
-        if date_key not in lessons_by_date:
-            lessons_by_date[date_key] = []
-        lessons_by_date[date_key].append(lesson)
-    
-    # Создаем календарную сетку
-    first_weekday = first_day.weekday()  # 0 = понедельник, 6 = воскресенье
-    calendar_days = []
-    
-    # Пустые дни в начале месяца
-    for _ in range(first_weekday):
-        calendar_days.append(None)
-    
-    # Дни месяца
-    weekday_names = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+    for lesson in desktop_lessons:
+        dk = lesson.date.strftime('%Y-%m-%d')
+        lessons_by_date.setdefault(dk, []).append(lesson)
+
+    first_weekday = first_day.weekday()
+    calendar_days = [None] * first_weekday
     for day in range(1, last_day_num + 1):
-        date = datetime(year, month, day).date()
-        date_key = date.strftime('%Y-%m-%d')
+        d = datetime(year, month, day).date()
         calendar_days.append({
-            'date': date,
-            'lessons': lessons_by_date.get(date_key, []),
-            'weekday_name': weekday_names[date.weekday()]
+            'date': d,
+            'lessons': lessons_by_date.get(d.strftime('%Y-%m-%d'), []),
+            'weekday_name': weekday_names[d.weekday()],
         })
-    
-    # Делим на недели
+
     weeks = []
     week = []
     for day in calendar_days:
@@ -268,128 +279,20 @@ def calendar_view(request):
             weeks.append(week)
             week = []
     if week:
-        # Дополняем последнюю неделю пустыми днями
         while len(week) < 7:
             week.append(None)
         weeks.append(week)
-    
-    # Для мобильной версии: определяем текущую неделю
-    # Сначала находим неделю с сегодняшним днем
-    base_week_index = None
-    for i, week in enumerate(weeks):
-        for day in week:
-            if day and day['date'] == today:
-                base_week_index = i
-                break
-        if base_week_index is not None:
-            break
-    
-    if base_week_index is None:
-        # Если сегодняшний день не в текущем месяце, показываем первую неделю
-        base_week_index = 0
-    
-    # Применяем смещение недели
-    current_week_index = base_week_index + week_offset
-    
-    # Проверяем, нужно ли переключить месяц
-    target_year = year
-    target_month = month
-    target_week_offset = week_offset
-    
-    # Если следующая неделя выходит за пределы месяца
-    if current_week_index >= len(weeks):
-        # Переключаемся на следующий месяц
-        if month == 12:
-            target_year = year + 1
-            target_month = 1
-        else:
-            target_year = year
-            target_month = month + 1
-        target_week_offset = 0  # Сбрасываем offset, начинаем с первой недели нового месяца
-        # Делаем редирект на следующий месяц
-        return redirect(f"{reverse('calendar')}?year={target_year}&month={target_month}&week_offset={target_week_offset}")
-    
-    # Если предыдущая неделя выходит за пределы месяца
-    if current_week_index < 0:
-        # Переключаемся на предыдущий месяц
-        if month == 1:
-            target_year = year - 1
-            target_month = 12
-        else:
-            target_year = year
-            target_month = month - 1
-        
-        # Вычисляем количество недель в предыдущем месяце
-        prev_first_day = datetime(target_year, target_month, 1).date()
-        prev_last_day_num = monthrange(target_year, target_month)[1]
-        prev_first_weekday = prev_first_day.weekday()
-        prev_total_days = prev_last_day_num + prev_first_weekday
-        prev_weeks_count = (prev_total_days + 6) // 7  # Округляем вверх
-        
-        target_week_offset = prev_weeks_count - 1  # Показываем последнюю неделю предыдущего месяца
-        # Делаем редирект на предыдущий месяц
-        return redirect(f"{reverse('calendar')}?year={target_year}&month={target_month}&week_offset={target_week_offset}")
-    
-    # Ограничиваем индекс недели в пределах текущего месяца
-    if current_week_index < 0:
-        current_week_index = 0
-    elif current_week_index >= len(weeks):
-        current_week_index = len(weeks) - 1
-    
-    # Получаем текущую неделю для мобильной версии
-    current_week = weeks[current_week_index] if weeks and current_week_index < len(weeks) else []
-    
-    # Определяем даты начала и конца текущей недели
-    week_start_date = None
-    week_end_date = None
-    for day in current_week:
-        if day:
-            if week_start_date is None:
-                week_start_date = day['date']
-            week_end_date = day['date']
-    
-    # Вычисляем параметры для навигации по неделям
-    # Для следующей недели
-    if current_week_index >= len(weeks) - 1:
-        # Если это последняя неделя месяца, переключаемся на следующий месяц
-        next_week_year = next_year
-        next_week_month = next_month
-        next_week_offset = 0
-    else:
-        next_week_year = year
-        next_week_month = month
-        next_week_offset = week_offset + 1
-    
-    # Для предыдущей недели
-    if current_week_index <= 0 and week_offset <= 0:
-        # Если это первая неделя месяца, переключаемся на предыдущий месяц
-        # Вычисляем количество недель в предыдущем месяце
-        if prev_month == 12:
-            prev_first_day = datetime(prev_year, prev_month, 1).date()
-        else:
-            prev_first_day = datetime(prev_year, prev_month, 1).date()
-        prev_last_day_num = monthrange(prev_year, prev_month)[1]
-        prev_first_weekday = prev_first_day.weekday()
-        prev_total_days = prev_last_day_num + prev_first_weekday
-        prev_weeks_count = (prev_total_days + 6) // 7  # Округляем вверх
-        
-        prev_week_year = prev_year
-        prev_week_month = prev_month
-        prev_week_offset = prev_weeks_count - 1  # Показываем последнюю неделю предыдущего месяца
-    else:
-        prev_week_year = year
-        prev_week_month = month
-        prev_week_offset = week_offset - 1
-    
+
     month_names = ['', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
                    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
-    
+
     return render(request, 'main/calendar.html', {
         'weeks': weeks,
         'current_week': current_week,
-        'current_week_index': current_week_index,
-        'week_start_date': week_start_date,
-        'week_end_date': week_end_date,
+        'mobile_monday': mobile_monday,
+        'mobile_sunday': mobile_sunday,
+        'prev_week_monday': prev_week_monday,
+        'next_week_monday': next_week_monday,
         'year': year,
         'month': month,
         'month_name': month_names[month],
@@ -397,8 +300,6 @@ def calendar_view(request):
         'prev_month': prev_month,
         'next_year': next_year,
         'next_month': next_month,
-        'prev_week_offset': week_offset - 1,
-        'next_week_offset': week_offset + 1,
         'today': today,
     })
 
