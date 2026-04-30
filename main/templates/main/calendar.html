@@ -108,9 +108,8 @@
     }
     
     .calendar-table th:hover {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-        color: white;
-        transform: translateY(-2px);
+        background: var(--primary-light);
+        color: var(--primary);
     }
     
     .calendar-table th:not(:last-child)::after {
@@ -184,29 +183,26 @@
     }
     
     .calendar-table td:hover:not(.empty) {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-        transform: translateY(-1px);
+        background: var(--primary-light);
         z-index: 10;
-        box-shadow: 0 2px 8px rgba(59, 63, 92, 0.3);
     }
-    
+
     [data-theme="dark"] .calendar-table td:hover:not(.empty) {
-        box-shadow: 0 2px 8px rgba(107, 114, 128, 0.4);
+        background: var(--primary-light);
     }
-    
+
     .calendar-table td:hover:not(.empty) .day-number {
-        color: white;
+        color: var(--primary);
     }
-    
+
     .calendar-table td:hover:not(.empty) .lesson-item {
-        background: var(--bg-secondary);
-        color: var(--text);
+        opacity: 0.95;
     }
-    
+
     .calendar-table td:hover:not(.empty) .lesson-item a {
-        color: var(--text);
+        color: #fff;
     }
-    
+
     .calendar-table td:hover:not(.empty) .lesson-count {
         background: var(--bg-secondary);
         color: var(--text);
@@ -233,14 +229,12 @@
     }
     
     .calendar-table td.today {
-        background: linear-gradient(135deg, rgba(59, 63, 92, 0.1) 0%, rgba(59, 63, 92, 0.05) 100%);
+        background: rgba(99, 91, 255, 0.04);
         border: 2px solid var(--primary);
-        box-shadow: 0 0 0 2px rgba(59, 63, 92, 0.1);
     }
-    
+
     [data-theme="dark"] .calendar-table td.today {
-        background: linear-gradient(135deg, rgba(107, 114, 128, 0.2) 0%, rgba(107, 114, 128, 0.1) 100%);
-        box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2);
+        background: rgba(124, 115, 255, 0.08);
     }
     
     .day-number {
@@ -285,29 +279,29 @@
     }
     
     .day-number.today {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+        background: var(--primary);
         color: #fff;
         font-weight: 700;
-        box-shadow: 0 2px 6px rgba(59, 63, 92, 0.3);
+        box-shadow: 0 2px 8px rgba(99, 91, 255, 0.35);
     }
-    
+
     [data-theme="dark"] .day-number.today {
-        box-shadow: 0 2px 6px rgba(107, 114, 128, 0.4);
+        box-shadow: 0 2px 8px rgba(124, 115, 255, 0.4);
     }
     
     .lesson-item {
         font-size: 11px;
-        padding: 6px 8px;
-        margin-bottom: 4px;
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+        padding: 5px 8px;
+        margin-bottom: 3px;
+        background: var(--primary);
         color: #fff;
-        border-radius: 6px;
+        border-radius: 5px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        transition: all 0.3s ease;
+        transition: background 0.15s ease, transform 0.15s ease;
         cursor: pointer;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 3px rgba(99, 91, 255, 0.25);
         line-height: 1.4;
         font-weight: 500;
     }
@@ -344,13 +338,8 @@
     }
     
     .lesson-item:hover {
-        background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
-        transform: translateX(2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-    
-    [data-theme="dark"] .lesson-item:hover {
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        background: var(--primary-hover);
+        transform: translateX(1px);
     }
     
     .lesson-item a {
@@ -470,14 +459,12 @@
     }
     
     .calendar-mobile-day.today {
-        border-left-color: var(--primary);
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        border-left: 3px solid var(--primary);
+        background: rgba(99, 91, 255, 0.04);
     }
-    
+
     [data-theme="dark"] .calendar-mobile-day.today {
-        background: linear-gradient(135deg, rgba(129, 140, 248, 0.2) 0%, rgba(129, 140, 248, 0.1) 100%);
-        box-shadow: 0 4px 12px rgba(129, 140, 248, 0.2);
+        background: rgba(124, 115, 255, 0.08);
     }
     
     .calendar-mobile-day-header {
@@ -508,16 +495,12 @@
     }
     
     .calendar-mobile-lesson {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+        background: var(--primary);
         color: #fff;
         padding: 10px 12px;
         border-radius: 8px;
         margin-bottom: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    [data-theme="dark"] .calendar-mobile-lesson {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 2px 6px rgba(99, 91, 255, 0.25);
     }
     
     .calendar-mobile-lesson a {
@@ -629,11 +612,10 @@
     }
     
     .weekday-btn:hover {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+        background: var(--primary);
         color: white;
         border-color: var(--primary);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow);
+        box-shadow: 0 2px 8px rgba(99, 91, 255, 0.3);
     }
     
     @media (max-width: 768px) {

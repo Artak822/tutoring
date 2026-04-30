@@ -1,47 +1,46 @@
 :root {
-    /* Ещё более мягкий, ближе к индиго */
-    --primary: #4f46e5;
-    --primary-light: #818cf8;
-    --primary-dark: #3730a3;
-    --secondary: #64748b;
-    --accent: #0ea5e9;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #06b6d4;
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8fafc;
-    --bg-tertiary: #f1f5f9;
-    --border: #e2e8f0;
-    --border-light: #f1f5f9;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-tertiary: #94a3b8;
-    /* Совместимость с base.html */
+    --primary: #635BFF;
+    --primary-light: rgba(99, 91, 255, 0.1);
+    --primary-dark: #5851DB;
+    --secondary: #697386;
+    --success: #30B27E;
+    --warning: #E9A504;
+    --danger: #DF1B41;
+    --info: #0EA5E9;
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F6F9FC;
+    --bg-tertiary: #EEF2F7;
+    --border: #E3E8EE;
+    --border-light: #EEF2F7;
+    --text-primary: #1A1F36;
+    --text-secondary: #697386;
+    --text-tertiary: #A3ACB9;
     --text: var(--text-primary);
     --text-muted: var(--text-tertiary);
     --surface: var(--bg-primary);
     --bg: var(--bg-secondary);
-    /* Более выразительные, но мягкие тени */
-    --shadow-sm: 0 4px 8px rgba(15, 23, 42, 0.06);
-    --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-    --shadow-md: 0 18px 35px rgba(15, 23, 42, 0.12);
-    --shadow-lg: 0 26px 55px rgba(15, 23, 42, 0.16);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.09), 0 4px 8px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="dark"] {
-    --text: #f1f5f9;
-    --text-primary: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-tertiary: #94a3b8;
-    --text-muted: #94a3b8;
-    --bg-primary: #1e293b;
-    --bg-secondary: #0f172a;
-    --bg-tertiary: #334155;
-    --surface: #1e293b;
-    --bg: #020617;
-    --border: #334155;
-    --border-light: #334155;
+    --primary: #7C73FF;
+    --primary-light: rgba(124, 115, 255, 0.15);
+    --primary-dark: #635BFF;
+    --text: #E6EDF3;
+    --text-primary: #E6EDF3;
+    --text-secondary: #8B949E;
+    --text-tertiary: #6E7681;
+    --text-muted: #6E7681;
+    --bg-primary: #161B22;
+    --bg-secondary: #0D1117;
+    --bg-tertiary: #21262D;
+    --surface: #161B22;
+    --bg: #0D1117;
+    --border: #30363D;
+    --border-light: #21262D;
 }
 
 * {
@@ -51,7 +50,7 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--bg-secondary);
     color: var(--text-primary);
     line-height: 1.6;
@@ -121,7 +120,7 @@ body {
 }
 
 .sidebar .nav-link.active {
-    background-color: #eff6ff;
+    background-color: var(--primary-light);
     color: var(--primary);
     font-weight: 600;
 }
@@ -289,7 +288,7 @@ body {
 }
 
 .btn-outline-primary:hover {
-    background-color: #eff6ff;
+    background-color: var(--primary-light);
     border-color: var(--primary);
     color: var(--primary);
 }
