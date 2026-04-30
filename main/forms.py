@@ -156,13 +156,9 @@ class StudentGroupForm(forms.ModelForm):
     """Форма для создания и редактирования группы учеников"""
     students = forms.ModelMultipleChoiceField(
         queryset=Student.objects.none(),
-        widget=forms.SelectMultiple(attrs={
-            'class': 'form-select',
-            'size': '10'
-        }),
+        widget=forms.CheckboxSelectMultiple(),
         label='Ученики',
         required=False,
-        help_text='Удерживайте Ctrl (Cmd на Mac) для выбора нескольких учеников'
     )
     
     class Meta:

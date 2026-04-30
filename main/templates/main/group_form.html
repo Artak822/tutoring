@@ -2,6 +2,57 @@
 
 {% block title %}{{ title }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .student-checklist {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    .student-checklist li {
+        list-style: none;
+    }
+
+    .student-check-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+        transition: border-color 0.15s ease, background 0.15s ease;
+        user-select: none;
+    }
+
+    .student-check-label:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+    }
+
+    .student-check-label input[type="checkbox"] {
+        width: 15px;
+        height: 15px;
+        accent-color: var(--primary);
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+
+    .student-check-label:has(input:checked) {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        color: var(--primary);
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <h1>{{ title }}</h1>
@@ -27,14 +78,26 @@
 <div class="card">
 <form method="post">
     {% csrf_token %}
-    
+
     <div class="form-group">
         <label class="form-label" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
         {{ form.name }}
         {{ form.name.errors }}
-        {% if form.name.help_text %}
-            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">{{ form.name.help_text }}</p>
-        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">{{ form.students.label }}</label>
+        <ul class="student-checklist">
+            {% for choice in form.students %}
+            <li>
+                <label class="student-check-label">
+                    {{ choice.tag }}
+                    {{ choice.choice_label }}
+                </label>
+            </li>
+            {% endfor %}
+        </ul>
+        {{ form.students.errors }}
     </div>
 
     <div class="form-group">
@@ -43,22 +106,7 @@
         {{ form.description.errors }}
     </div>
 
-    <div class="form-group">
-        <label class="form-label" for="{{ form.students.id_for_label }}">{{ form.students.label }}</label>
-        {{ form.students }}
-        {{ form.students.errors }}
-        {% if form.students.help_text %}
-            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">{{ form.students.help_text }}</p>
-        {% endif %}
-    </div>
-
-    <div class="form-group">
-        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            {{ form.is_active }}
-            <span>{{ form.is_active.label }}</span>
-        </label>
-        {{ form.is_active.errors }}
-    </div>
+    <div style="display: none;">{{ form.is_active }}</div>
 
     <div class="form-actions">
         <button type="submit" class="btn">
@@ -88,4 +136,3 @@
 </form>
 </div>
 {% endblock %}
-
