@@ -24,9 +24,10 @@
     </div>
 </div>
 
+<div class="card">
 <form method="post">
     {% csrf_token %}
-    
+
     <div class="form-group">
         <label class="form-label" for="{{ form.students.id_for_label }}">{{ form.students.label }}</label>
         {{ form.students }}
@@ -97,6 +98,7 @@
         {% endif %}
     </div>
 </form>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

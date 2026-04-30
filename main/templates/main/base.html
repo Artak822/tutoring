@@ -115,7 +115,7 @@
 
         /* Sidebar */
         .sidebar {
-            width: 280px;
+            width: 248px;
             background: var(--surface);
             border-right: 1px solid var(--border);
             display: flex;
@@ -126,7 +126,6 @@
             bottom: 0;
             z-index: 250;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, visibility 0.3s ease;
-            box-shadow: var(--shadow-lg);
         }
 
         .sidebar-header {
@@ -271,29 +270,20 @@
         /* Main Content */
         .main-shell {
             flex: 1;
-            margin-left: 280px;
+            margin-left: 248px;
             min-height: 100vh;
             background: var(--bg);
-            width: calc(100% - 280px);
-            max-width: calc(100% - 280px);
+            width: calc(100% - 248px);
+            max-width: calc(100% - 248px);
             overflow-x: hidden;
         }
 
         .main-inner {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 32px;
-            padding-top: 32px;
+            padding: 36px 40px;
             width: 100%;
             box-sizing: border-box;
-        }
-
-        .content {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 32px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
         }
 
         /* Messages */
@@ -707,14 +697,6 @@
                 box-sizing: border-box;
             }
 
-            .content {
-                padding: 12px;
-                padding-top: 12px;
-                width: 100%;
-                max-width: 100%;
-                box-sizing: border-box;
-            }
-            
             .app-layout {
                 width: 100%;
                 max-width: 100%;
@@ -745,28 +727,15 @@
                 padding: 12px;
             }
             
-            /* Убеждаемся, что первый элемент на странице не перекрывается */
-            .content > *:first-child {
-                margin-top: 8px;
-            }
-            
-            .content > .page-header:first-child {
-                margin-top: 0;
-            }
-            
             /* Отступы для кнопок "Назад" */
             .btn-secondary:first-child {
                 margin-top: 8px;
                 margin-bottom: 12px;
             }
-            
+
             /* Отступы для карточек */
             .card {
                 margin-top: 8px;
-            }
-            
-            .content > .card:first-child {
-                margin-top: 0;
             }
 
             .page-actions {
@@ -1066,9 +1035,7 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-                <div class="content">
                     {% block content %}{% endblock %}
-                </div>
             </div>
         </main>
     </div>
