@@ -8,162 +8,195 @@
 </div>
 
 {% if students_with_debts %}
-<div class="card" style="margin-bottom: 24px;">
-    <div style="padding: 24px; background: var(--bg-secondary); border-radius: var(--radius-sm);">
-        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Общий долг</p>
-        <h2 style="font-size: 36px; font-weight: 700; color: var(--danger); margin: 0;">{{ total_debts|floatformat:0 }} ₽</h2>
-    </div>
+
+<div class="debt-summary">
+    <p class="debt-summary__label">Общий долг</p>
+    <span class="debt-summary__amount">{{ total_debts|floatformat:0 }} ₽</span>
+    <p class="debt-summary__count">{{ students_with_debts|length }} ученик{{ students_with_debts|length|pluralize:",,ов" }}</p>
 </div>
 
-<!-- Десктопная версия -->
-<div class="card desktop-table">
-    <div class="table-responsive">
-        <table>
-            <thead>
-                <tr>
-                    <th>Ученик</th>
-                    <th>Долг</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in students_with_debts %}
-                <tr>
-                    <td>
-                        <a href="{% url 'student_detail' item.student.pk %}" style="font-weight: 600; color: var(--text); text-decoration: none;">
-                            {{ item.student.last_name }} {{ item.student.first_name }}
-                        </a>
-                    </td>
-                    <td style="color: var(--danger); font-weight: 600; font-size: 18px;">{{ item.debt|floatformat:0 }} ₽</td>
-                    <td>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <a href="{% url 'student_detail' item.student.pk %}" class="btn btn-sm">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                                Подробнее
-                            </a>
-                            <a href="{% url 'clear_all_debts' item.student.pk %}" class="btn btn-sm" style="background: var(--success);">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                    <polyline points="22 4 12 14.01 9 11.01"/>
-                                </svg>
-                                Погасить
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Мобильная версия -->
-<div class="mobile-cards">
+<div class="debt-list">
     {% for item in students_with_debts %}
-    <div class="mobile-card-item">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-            <div>
-                <a href="{% url 'student_detail' item.student.pk %}" style="font-weight: 600; color: var(--text); text-decoration: none; font-size: 16px; display: block; margin-bottom: 4px;">
-                    {{ item.student.last_name }} {{ item.student.first_name }}
-                </a>
-                <p style="font-size: 24px; font-weight: 700; color: var(--danger); margin: 0;">{{ item.debt|floatformat:0 }} ₽</p>
-            </div>
+    <div class="debt-row">
+        <div class="debt-row__student">
+            <div class="debt-row__avatar">{{ item.student.first_name|slice:":1" }}{{ item.student.last_name|slice:":1" }}</div>
+            <a href="{% url 'student_detail' item.student.pk %}" class="debt-row__name">
+                {{ item.student.last_name }} {{ item.student.first_name }}
+            </a>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <a href="{% url 'student_detail' item.student.pk %}" class="btn btn-sm" style="width: 100%; justify-content: center;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                </svg>
-                Подробнее
-            </a>
-            <a href="{% url 'clear_all_debts' item.student.pk %}" class="btn btn-sm" style="background: var(--success); width: 100%; justify-content: center;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                Погасить
-            </a>
+        <div class="debt-row__right">
+            <span class="debt-row__amount">{{ item.debt|floatformat:0 }} ₽</span>
+            <div class="debt-row__actions">
+                <a href="{% url 'student_detail' item.student.pk %}" class="btn btn-secondary btn-sm">Подробнее</a>
+                <a href="{% url 'clear_all_debts' item.student.pk %}" class="btn btn-sm debt-row__pay-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    Погасить
+                </a>
+            </div>
         </div>
     </div>
     {% endfor %}
 </div>
+
 {% else %}
 <div class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--text-muted); margin-bottom: 16px;">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
     <p>Нет учеников с долгами</p>
-    <a href="{% url 'student_list' %}" class="btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        К списку учеников
-    </a>
+    <a href="{% url 'student_list' %}" class="btn">К списку учеников</a>
 </div>
 {% endif %}
 
 <style>
-@media (max-width: 768px) {
-    .desktop-table {
-        display: none;
-    }
-    
-    .mobile-cards {
-        display: flex;
-        overflow-x: auto;
-        gap: 16px;
-        padding-bottom: 8px;
-        -webkit-overflow-scrolling: touch;
-        scroll-snap-type: x mandatory;
-        scrollbar-width: thin;
-    }
-    
-    .mobile-cards::-webkit-scrollbar {
-        height: 6px;
-    }
-    
-    .mobile-cards::-webkit-scrollbar-track {
-        background: var(--bg-secondary);
-        border-radius: 3px;
-    }
-    
-    .mobile-cards::-webkit-scrollbar-thumb {
-        background: var(--primary);
-        border-radius: 3px;
-    }
-    
-    .mobile-card-item {
-        flex: 0 0 calc(100% - 32px);
-        min-width: calc(100% - 32px);
-        max-width: calc(100% - 32px);
-        margin-bottom: 0;
-        padding: 16px;
-        scroll-snap-align: start;
-        background: var(--surface);
-        border: 1px solid var(--primary);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-sm);
-    }
-    
-    .card[style*="margin-bottom: 24px"] > div[style*="padding: 24px"] {
-        padding: 16px !important;
-    }
-    
-    .card[style*="margin-bottom: 24px"] > div[style*="padding: 24px"] h2 {
-        font-size: 28px !important;
-    }
+.debt-summary {
+    background: var(--surface);
+    border-radius: 6px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
 }
 
-@media (min-width: 769px) {
-    .desktop-table {
-        display: block;
+.debt-summary__label {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin: 0 0 6px;
+}
+
+.debt-summary__amount {
+    display: block;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--danger);
+    line-height: 1.1;
+}
+
+.debt-summary__count {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.debt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.debt-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--surface);
+    transition: background 0.15s;
+}
+
+.debt-row:hover {
+    background: var(--bg-secondary);
+}
+
+.debt-row__student {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.debt-row__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+}
+
+.debt-row__name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.debt-row__name:hover {
+    color: var(--primary);
+}
+
+.debt-row__right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
+.debt-row__amount {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--danger);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.debt-row__actions {
+    display: flex;
+    gap: 8px;
+}
+
+.debt-row__pay-btn {
+    background: var(--success);
+    color: #fff;
+}
+
+.debt-row__pay-btn:hover {
+    background: #27a06e;
+    color: #fff;
+}
+
+@media (max-width: 600px) {
+    .debt-row {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
     }
-    
-    .mobile-cards {
-        display: none;
+
+    .debt-row__right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .debt-row__actions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .debt-row__actions .btn {
+        width: 100%;
+        justify-content: center;
     }
 }
 </style>
 {% endblock %}
-

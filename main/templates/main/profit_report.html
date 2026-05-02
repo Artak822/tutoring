@@ -77,9 +77,10 @@
 
 {% if payments %}
 <div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Последние платежи</h3>
+    <div class="card-header" data-collapsible="report-payments">
+        <h3 class="card-title">Последние платежи <span style="font-size:13px;font-weight:400;color:var(--text-muted);margin-left:6px;">{{ payments|length }}</span></h3>
     </div>
+    <div class="collapsible-body" id="report-payments">
     <table>
         <thead>
             <tr>
@@ -104,6 +105,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 {% endif %}
 
@@ -111,9 +113,10 @@
 
 {% if profit_by_student %}
 <div class="card" style="margin-bottom: 32px;">
-    <div class="card-header">
-        <h3 class="card-title">По ученикам</h3>
+    <div class="card-header" data-collapsible="report-by-student">
+        <h3 class="card-title">По ученикам <span style="font-size:13px;font-weight:400;color:var(--text-muted);margin-left:6px;">{{ profit_by_student|length }}</span></h3>
     </div>
+    <div class="collapsible-body" id="report-by-student">
     <table>
         <thead>
             <tr>
@@ -130,14 +133,16 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 {% endif %}
 
 {% if profit_by_method %}
 <div class="card" style="margin-bottom: 32px;">
-    <div class="card-header">
+    <div class="card-header" data-collapsible="report-by-method">
         <h3 class="card-title">По способам оплаты</h3>
     </div>
+    <div class="collapsible-body" id="report-by-method">
     <table>
         <thead>
             <tr>
@@ -159,6 +164,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 {% endif %}
 

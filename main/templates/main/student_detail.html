@@ -3,18 +3,15 @@
 {% block title %}{{ student.last_name }} {{ student.first_name }}{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 24px;">
-    <a href="{% url 'student_list' %}" class="btn btn-secondary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        Назад к списку
-    </a>
-</div>
-
 <div class="page-header">
     <h1>{{ student.last_name }} {{ student.first_name }}</h1>
     <div class="page-actions">
+        <a href="{% url 'student_list' %}" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Назад
+        </a>
         {% if total_debt > 0 %}
         <a href="{% url 'clear_all_debts' student.pk %}" class="btn" style="background: var(--success);">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -118,9 +115,10 @@
 </div>
 
 <div class="card" style="margin-bottom: 32px;">
-    <div class="card-header">
-        <h3 class="card-title">Занятия</h3>
+    <div class="card-header" data-collapsible="student-lessons">
+        <h3 class="card-title">Занятия{% if lessons_data %} <span style="font-size:13px;font-weight:400;color:var(--text-muted);margin-left:6px;">{{ lessons_data|length }}</span>{% endif %}</h3>
     </div>
+    <div class="collapsible-body" id="student-lessons">
     {% if lessons_data %}
     <!-- Десктопная версия -->
     <div class="desktop-table">
@@ -230,13 +228,15 @@
     {% else %}
     <p style="text-align: center; color: var(--text-secondary); padding: 32px;">Нет занятий</p>
     {% endif %}
+    </div>
 </div>
 
 {% if payments %}
 <div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Последние оплаты</h3>
+    <div class="card-header" data-collapsible="student-payments">
+        <h3 class="card-title">Последние оплаты <span style="font-size:13px;font-weight:400;color:var(--text-muted);margin-left:6px;">{{ payments|length }}</span></h3>
     </div>
+    <div class="collapsible-body" id="student-payments">
     <!-- Десктопная версия -->
     <div class="desktop-table">
         <div class="table-responsive">
@@ -302,6 +302,7 @@
         </div>
         {% endfor %}
     </div>
+    </div>
 </div>
 {% endif %}
 
@@ -343,9 +344,8 @@
         padding: 16px;
         scroll-snap-align: start;
         background: var(--surface);
-        border: 1px solid var(--primary);
         border-radius: var(--radius);
-        box-shadow: var(--shadow-sm);
+        box-shadow: var(--shadow);
     }
     
     .page-actions {

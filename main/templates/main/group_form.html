@@ -20,19 +20,19 @@
         align-items: center;
         gap: 10px;
         padding: 9px 14px;
-        border: 1px solid var(--border);
         border-radius: var(--radius-sm);
         background: var(--surface);
         cursor: pointer;
         font-size: 14px;
         font-weight: 500;
         color: var(--text);
-        transition: border-color 0.15s ease, background 0.15s ease;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow 0.15s ease, background 0.15s ease;
         user-select: none;
     }
 
     .student-check-label:hover {
-        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary), var(--shadow-sm);
         background: var(--primary-light);
     }
 
@@ -45,7 +45,7 @@
     }
 
     .student-check-label:has(input:checked) {
-        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary), var(--shadow-sm);
         background: var(--primary-light);
         color: var(--primary);
         font-weight: 600;
