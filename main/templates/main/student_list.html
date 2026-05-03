@@ -116,6 +116,11 @@
         color: var(--danger);
     }
 
+    .debt-badge.has-balance {
+        background: rgba(48, 178, 126, 0.12);
+        color: var(--success);
+    }
+
     .debt-badge.no-debt {
         background: var(--bg-secondary);
         color: var(--text-muted);
@@ -203,8 +208,14 @@
 
         <div class="student-card-footer">
             {% with debt=student.get_total_debt %}
-            <span class="debt-badge {% if debt > 0 %}has-debt{% else %}no-debt{% endif %}">
-                {% if debt > 0 %}Долг: {{ debt|floatformat:0 }} ₽{% else %}Без долга{% endif %}
+            <span class="debt-badge {% if debt > 0 %}has-debt{% elif student.prepaid_balance > 0 %}has-balance{% else %}no-debt{% endif %}">
+                {% if debt > 0 %}
+                    Долг: {{ debt|floatformat:0 }} ₽
+                {% elif student.prepaid_balance > 0 %}
+                    Предоплата: {{ student.prepaid_balance|floatformat:0 }} ₽
+                {% else %}
+                    Без долга
+                {% endif %}
             </span>
             {% endwith %}
             <div class="student-card-arrow">

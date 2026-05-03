@@ -3,12 +3,14 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
+from django.http import JsonResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.db.models import Q, Sum
 from datetime import datetime, timedelta
 from calendar import monthrange
 from decimal import Decimal, InvalidOperation
+import json
 from .models import Student, Lesson, Attendance, Payment, Tutor, StudentGroup
 from .forms import StudentForm, LessonForm, AttendanceForm, PaymentForm, TutorRegistrationForm, ClearAllDebtsForm, RecurringLessonForm, StudentGroupForm
 
@@ -355,10 +357,33 @@ def lesson_detail(request, pk):
             'has_debt': attendance and attendance.status == 'present' and not payment and lesson.lesson_price > 0,
             'debt_paid_amount': debt_paid_amount
         })
-    
+
+    students_state = []
+    for item in students_data:
+        p = item['payment']
+        payment_data = None
+        if p:
+            payment_data = {
+                'amount': str(p.amount),
+                'method': p.payment_method,
+                'method_display': p.get_payment_method_display(),
+                'is_balance': p.is_balance_payment,
+            }
+        att = item['attendance']
+        students_state.append({
+            'pk': item['student'].pk,
+            'name': str(item['student']),
+            'url': item['student'].get_absolute_url(),
+            'attendance_status': att.status if att else None,
+            'payment': payment_data,
+            'student_balance': str(item['student'].prepaid_balance),
+            'lesson_price': str(lesson.lesson_price),
+        })
+
     return render(request, 'main/lesson_detail.html', {
         'lesson': lesson,
         'students_data': students_data,
+        'students_state_json': json.dumps(students_state, ensure_ascii=False),
         'attendances': attendances,
         'payments': payments,
         'total_price': lesson.get_total_price(),
@@ -620,6 +645,130 @@ def mark_payment(request, lesson_pk, student_pk):
         'student': student,
         'attendance': attendance
     })
+
+
+def _payment_to_dict(payment):
+    if not payment:
+        return None
+    return {
+        'amount': str(payment.amount),
+        'method': payment.payment_method,
+        'method_display': payment.get_payment_method_display(),
+        'is_balance': payment.is_balance_payment,
+    }
+
+
+@login_required
+def quick_lesson_action(request, lesson_pk, student_pk):
+    """AJAX: быстрые действия с посещаемостью и оплатой на странице занятия"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    tutor = get_tutor(request)
+    if not tutor:
+        return JsonResponse({'error': 'Профиль репетитора не найден'}, status=403)
+
+    lesson = get_object_or_404(Lesson, pk=lesson_pk, tutor=tutor)
+    student = get_object_or_404(Student, pk=student_pk, tutor=tutor)
+
+    if student not in lesson.students.all():
+        return JsonResponse({'error': 'Ученик не назначен на это занятие'}, status=400)
+
+    action = request.POST.get('action')
+
+    if action == 'mark_present':
+        attendance, _ = Attendance.objects.get_or_create(
+            lesson=lesson, student=student, defaults={'status': 'present'}
+        )
+        if attendance.status != 'present':
+            attendance.status = 'present'
+            attendance.save()
+
+        payment = Payment.objects.filter(lesson=lesson, student=student).first()
+        if not payment and lesson.lesson_price > 0:
+            payment = student.try_auto_pay_lesson(lesson)
+
+        student.refresh_from_db()
+        return JsonResponse({
+            'attendance_status': 'present',
+            'payment': _payment_to_dict(payment),
+            'student_balance': str(student.prepaid_balance),
+            'lesson_price': str(lesson.lesson_price),
+        })
+
+    elif action == 'mark_absent':
+        attendance = Attendance.objects.filter(lesson=lesson, student=student).first()
+        if attendance:
+            if attendance.status == 'present':
+                student.refund_balance_payment_for_lesson(lesson)
+                Payment.objects.filter(lesson=lesson, student=student).delete()
+            attendance.status = 'absent'
+            attendance.save()
+        else:
+            Attendance.objects.create(lesson=lesson, student=student, status='absent')
+
+        student.refresh_from_db()
+        return JsonResponse({
+            'attendance_status': 'absent',
+            'payment': None,
+            'student_balance': str(student.prepaid_balance),
+            'lesson_price': str(lesson.lesson_price),
+        })
+
+    elif action == 'add_payment':
+        try:
+            amount = Decimal(request.POST.get('amount', str(lesson.lesson_price)))
+            if amount <= 0:
+                raise ValueError('Сумма должна быть больше 0')
+        except (ValueError, InvalidOperation):
+            return JsonResponse({'error': 'Некорректная сумма'}, status=400)
+
+        method = request.POST.get('method', 'cash')
+        if method not in ('cash', 'transfer'):
+            return JsonResponse({'error': 'Некорректный метод оплаты'}, status=400)
+
+        if Payment.objects.filter(lesson=lesson, student=student).exists():
+            return JsonResponse({'error': 'Оплата уже существует'}, status=400)
+
+        payment = Payment.objects.create(
+            student=student,
+            lesson=lesson,
+            amount=amount,
+            payment_date=lesson.date,
+            payment_method=method,
+            is_balance_payment=False,
+        )
+
+        if amount > lesson.lesson_price:
+            student.add_prepaid_balance(amount - lesson.lesson_price)
+
+        student.auto_pay_debt_from_prepaid()
+        student.refresh_from_db()
+        return JsonResponse({
+            'attendance_status': 'present',
+            'payment': _payment_to_dict(payment),
+            'student_balance': str(student.prepaid_balance),
+            'lesson_price': str(lesson.lesson_price),
+        })
+
+    elif action == 'reset_payment':
+        payment = Payment.objects.filter(lesson=lesson, student=student).first()
+        if payment:
+            if payment.is_balance_payment:
+                student.add_prepaid_balance(payment.amount)
+            elif payment.amount > lesson.lesson_price:
+                student.deduct_prepaid_balance(payment.amount - lesson.lesson_price)
+            payment.delete()
+
+        student.refresh_from_db()
+        return JsonResponse({
+            'attendance_status': 'present',
+            'payment': None,
+            'student_balance': str(student.prepaid_balance),
+            'lesson_price': str(lesson.lesson_price),
+        })
+
+    return JsonResponse({'error': 'Неизвестное действие'}, status=400)
 
 
 def register(request):
