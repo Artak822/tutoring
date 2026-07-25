@@ -362,24 +362,15 @@ def lesson_detail(request, pk):
 
     students_state = []
     for item in students_data:
-        p = item['payment']
-        payment_data = None
-        if p:
-            payment_data = {
-                'amount': str(p.amount),
-                'method': p.payment_method,
-                'method_display': p.get_payment_method_display(),
-                'is_balance': p.is_balance_payment,
-            }
         att = item['attendance']
         students_state.append({
             'pk': item['student'].pk,
             'name': str(item['student']),
             'url': item['student'].get_absolute_url(),
             'attendance_status': att.status if att else None,
-            'payment': payment_data,
-            'student_balance': str(item['student'].prepaid_balance),
-            'lesson_price': str(lesson.lesson_price),
+            'payment': services.payment_to_dict(item['payment']),
+            'student_balance': services.money(item['student'].prepaid_balance),
+            'lesson_price': services.money(lesson.lesson_price),
         })
 
     return render(request, 'main/lesson_detail.html', {

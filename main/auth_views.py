@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import obtain_auth_token
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -23,3 +23,13 @@ class RegisterView(APIView):
         user = form.save()
         token, _ = Token.objects.get_or_create(user=user)
         return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+
+
+class LogoutView(APIView):
+    """POST /api/v1/auth/logout/ — удаляет токен. Токены DRF бессрочные,
+    так что без явного отзыва украденный токен живёт вечно."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        Token.objects.filter(user=request.user).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

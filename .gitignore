@@ -1,3 +1,4 @@
+# ── Python / Django ──
 venv/
 __pycache__/
 *.py[cod]
@@ -5,18 +6,18 @@ __pycache__/
 *.so
 .Python
 env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
+/build/
+/develop-eggs/
+/dist/
+/downloads/
+/eggs/
+/.eggs/
+/lib/
+/lib64/
+/parts/
+/sdist/
+/var/
+/wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -27,3 +28,17 @@ db.sqlite3-journal
 .venv
 .DS_Store
 staticfiles/
+
+# ── Xcode / iOS ──
+ios/**/build/
+ios/**/DerivedData/
+ios/**/*.xcuserstate
+ios/**/xcuserdata/
+ios/**/*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+ios/**/.swiftpm/xcode/package.xcworkspace/xcuserdata/
+ios/**/.build/
+ios/**/*.moved-aside
+ios/**/*.hmap
+ios/**/*.ipa
+ios/**/*.dSYM.zip
+ios/**/*.dSYM

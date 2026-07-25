@@ -1,5 +1,8 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 
+from . import services
 from .models import Tutor, Student, StudentGroup, Lesson, Attendance, Payment
 
 
@@ -20,13 +23,43 @@ class TutorSerializer(serializers.ModelSerializer):
 
 class StudentGroupSerializer(serializers.ModelSerializer):
     students_count = serializers.SerializerMethodField()
+    # Связь m2m объявлена на Student, но состав группы правят со стороны группы —
+    # так же, как в StudentGroupForm. Без этого поля клиенту пришлось бы
+    # обновлять каждого ученика по отдельности.
+    students = serializers.PrimaryKeyRelatedField(
+        many=True, required=False, queryset=Student.objects.all()
+    )
+    name = serializers.CharField(max_length=200, required=False, allow_blank=True)
 
     class Meta:
         model = StudentGroup
-        fields = ['id', 'name', 'description', 'is_active', 'created_at', 'updated_at', 'students_count']
+        fields = [
+            'id', 'name', 'description', 'is_active', 'created_at', 'updated_at',
+            'students', 'students_count',
+        ]
 
     def get_students_count(self, obj):
         return obj.get_students_count()
+
+    def validate_students(self, value):
+        tutor = self.context['request'].user.tutor
+        for student in value:
+            if student.tutor_id != tutor.id:
+                raise serializers.ValidationError('Ученик не принадлежит текущему репетитору')
+        return value
+
+    def validate(self, attrs):
+        """Пустое название собираем из имён учеников — как это делает веб-форма."""
+        if self.instance and 'name' not in attrs:
+            return attrs
+        if attrs.get('name', '').strip():
+            return attrs
+
+        students = attrs.get('students')
+        if students is None:
+            students = list(self.instance.students.all()) if self.instance else []
+        attrs['name'] = ', '.join(s.first_name for s in students) or 'Новая группа'
+        return attrs
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -45,10 +78,10 @@ class StudentSerializer(serializers.ModelSerializer):
         read_only_fields = ['prepaid_balance']
 
     def get_total_paid(self, obj):
-        return str(obj.get_total_paid())
+        return services.money(obj.get_total_paid())
 
     def get_total_debt(self, obj):
-        return str(obj.get_total_debt())
+        return services.money(obj.get_total_debt())
 
     def validate_groups(self, value):
         tutor = self.context['request'].user.tutor
@@ -79,7 +112,7 @@ class LessonSerializer(serializers.ModelSerializer):
         return obj.get_present_students_count()
 
     def get_total_price(self, obj):
-        return str(obj.get_total_price())
+        return services.money(obj.get_total_price())
 
     def validate_students(self, value):
         tutor = self.context['request'].user.tutor
@@ -119,3 +152,30 @@ class QuickActionSerializer(serializers.Serializer):
 class CancelLessonSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True)
     note = serializers.CharField(required=False, allow_blank=True)
+
+
+class RecurringLessonSerializer(serializers.Serializer):
+    """Создание серии еженедельных занятий — аналог RecurringLessonForm."""
+    students = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+    start_date = serializers.DateField()
+    time = serializers.TimeField()
+    duration = serializers.IntegerField(min_value=1, default=60)
+    lesson_price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.00'))
+    period = serializers.ChoiceField(choices=list(services.RECURRING_PERIOD_DAYS.keys()))
+    notes = serializers.CharField(required=False, allow_blank=True, default='')
+
+
+class ClearDebtsSerializer(serializers.Serializer):
+    payment_method = serializers.ChoiceField(choices=['cash', 'transfer'])
+    payment_date = serializers.DateField(required=False)
+    notes = serializers.CharField(required=False, allow_blank=True, default='')
+
+
+class StudentDebtSerializer(serializers.Serializer):
+    """Строка списка должников."""
+    id = serializers.IntegerField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    phone = serializers.CharField(allow_null=True)
+    debt = serializers.CharField()
+    prepaid_balance = serializers.CharField()
