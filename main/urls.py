@@ -31,5 +31,7 @@ urlpatterns = [
     path('lesson/<int:lesson_pk>/attendance/<int:student_pk>/', views.mark_attendance, name='mark_attendance'),
     path('lesson/<int:lesson_pk>/payment/<int:student_pk>/', views.mark_payment, name='mark_payment'),
     path('lesson/<int:lesson_pk>/quick-action/<int:student_pk>/', views.quick_lesson_action, name='quick_lesson_action'),
+    path('lesson/<int:pk>/cancel/', views.cancel_lesson, name='cancel_lesson'),
+    path('lesson/<int:pk>/restore/', views.restore_lesson, name='restore_lesson'),
     path('reports/profit/', views.profit_report, name='profit_report'),
 ]

@@ -39,7 +39,7 @@ class Tutor(models.Model):
         """Количество прошедших занятий за период (только с отметками посещаемости)"""
         # Получаем все занятия, у которых есть хотя бы одна отметка посещаемости
         # Занятие считается прошедшим только если есть хотя бы одна отметка посещаемости
-        lessons = self.lessons.filter(attendances__isnull=False).distinct()
+        lessons = self.lessons.filter(status='scheduled', attendances__isnull=False).distinct()
         
         if start_date:
             lessons = lessons.filter(date__gte=start_date)
@@ -119,16 +119,11 @@ class Student(models.Model):
         # Занятие считается прошедшим только если есть хотя бы одна отметка посещаемости
         total_debt = Decimal('0.00')
         
-        for lesson in self.lessons.all():
-            # Проверяем, что у занятия есть хотя бы одна отметка посещаемости
-            # Если нет ни одной отметки - занятие не было проведено
+        for lesson in self.lessons.filter(status='scheduled'):
             if not lesson.attendances.exists():
-                continue  # Пропускаем занятия без отметок посещаемости
-            
-            # Проверяем, присутствовал ли ученик на занятии
+                continue
             attendance = Attendance.objects.filter(lesson=lesson, student=self, status='present').first()
             if attendance:
-                # Проверяем, оплатил ли он это занятие
                 payment = Payment.objects.filter(lesson=lesson, student=self).first()
                 if not payment and lesson.lesson_price > 0:
                     total_debt += lesson.lesson_price
@@ -221,15 +216,11 @@ class Student(models.Model):
         
         # Находим все занятия с долгом (присутствовал, но не оплатил)
         unpaid_lessons = []
-        for lesson in self.lessons.all():
-            # Проверяем, что у занятия есть хотя бы одна отметка посещаемости
+        for lesson in self.lessons.filter(status='scheduled'):
             if not lesson.attendances.exists():
                 continue
-            
-            # Проверяем, присутствовал ли ученик на занятии
             attendance = Attendance.objects.filter(lesson=lesson, student=self, status='present').first()
             if attendance:
-                # Проверяем, оплатил ли он это занятие
                 payment = Payment.objects.filter(lesson=lesson, student=self).first()
                 if not payment and lesson.lesson_price > 0:
                     unpaid_lessons.append(lesson)
@@ -269,6 +260,20 @@ class Student(models.Model):
 
 class Lesson(models.Model):
     """Модель занятия"""
+    STATUS_CHOICES = [
+        ('scheduled', 'Запланировано'),
+        ('cancelled', 'Отменено'),
+    ]
+
+    CANCELLATION_REASON_CHOICES = [
+        ('air_alert', 'Воздушная тревога / атака БПЛ'),
+        ('student_sick', 'Ученик заболел'),
+        ('tutor_sick', 'Репетитор заболел'),
+        ('student_request', 'Просьба ученика'),
+        ('rescheduled', 'Перенос'),
+        ('other', 'Другое'),
+    ]
+
     tutor = models.ForeignKey(Tutor, on_delete=models.CASCADE, related_name='lessons', verbose_name='Репетитор')
     students = models.ManyToManyField(Student, related_name='lessons', verbose_name='Ученики')
     date = models.DateField(verbose_name='Дата')
@@ -279,6 +284,9 @@ class Lesson(models.Model):
     notes = models.TextField(blank=True, verbose_name='Заметки')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled', verbose_name='Статус')
+    cancellation_reason = models.CharField(max_length=30, choices=CANCELLATION_REASON_CHOICES, blank=True, verbose_name='Причина отмены')
+    cancellation_note = models.TextField(blank=True, verbose_name='Заметка об отмене')
     
     def get_present_students_count(self):
         """Количество учеников, которые присутствовали"""

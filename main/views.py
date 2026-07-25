@@ -13,6 +13,8 @@ from decimal import Decimal, InvalidOperation
 import json
 from .models import Student, Lesson, Attendance, Payment, Tutor, StudentGroup
 from .forms import StudentForm, LessonForm, AttendanceForm, PaymentForm, TutorRegistrationForm, ClearAllDebtsForm, RecurringLessonForm, StudentGroupForm
+from . import services
+from .services import ServiceError
 
 
 def get_tutor(request):
@@ -647,17 +649,6 @@ def mark_payment(request, lesson_pk, student_pk):
     })
 
 
-def _payment_to_dict(payment):
-    if not payment:
-        return None
-    return {
-        'amount': str(payment.amount),
-        'method': payment.payment_method,
-        'method_display': payment.get_payment_method_display(),
-        'is_balance': payment.is_balance_payment,
-    }
-
-
 @login_required
 def quick_lesson_action(request, lesson_pk, student_pk):
     """AJAX: быстрые действия с посещаемостью и оплатой на странице занятия"""
@@ -676,99 +667,55 @@ def quick_lesson_action(request, lesson_pk, student_pk):
 
     action = request.POST.get('action')
 
-    if action == 'mark_present':
-        attendance, _ = Attendance.objects.get_or_create(
-            lesson=lesson, student=student, defaults={'status': 'present'}
-        )
-        if attendance.status != 'present':
-            attendance.status = 'present'
-            attendance.save()
-
-        payment = Payment.objects.filter(lesson=lesson, student=student).first()
-        if not payment and lesson.lesson_price > 0:
-            payment = student.try_auto_pay_lesson(lesson)
-
-        student.refresh_from_db()
-        return JsonResponse({
-            'attendance_status': 'present',
-            'payment': _payment_to_dict(payment),
-            'student_balance': str(student.prepaid_balance),
-            'lesson_price': str(lesson.lesson_price),
-        })
-
-    elif action == 'mark_absent':
-        attendance = Attendance.objects.filter(lesson=lesson, student=student).first()
-        if attendance:
-            if attendance.status == 'present':
-                student.refund_balance_payment_for_lesson(lesson)
-                Payment.objects.filter(lesson=lesson, student=student).delete()
-            attendance.status = 'absent'
-            attendance.save()
-        else:
-            Attendance.objects.create(lesson=lesson, student=student, status='absent')
-
-        student.refresh_from_db()
-        return JsonResponse({
-            'attendance_status': 'absent',
-            'payment': None,
-            'student_balance': str(student.prepaid_balance),
-            'lesson_price': str(lesson.lesson_price),
-        })
-
-    elif action == 'add_payment':
-        try:
-            amount = Decimal(request.POST.get('amount', str(lesson.lesson_price)))
-            if amount <= 0:
-                raise ValueError('Сумма должна быть больше 0')
-        except (ValueError, InvalidOperation):
-            return JsonResponse({'error': 'Некорректная сумма'}, status=400)
-
-        method = request.POST.get('method', 'cash')
-        if method not in ('cash', 'transfer'):
-            return JsonResponse({'error': 'Некорректный метод оплаты'}, status=400)
-
-        if Payment.objects.filter(lesson=lesson, student=student).exists():
-            return JsonResponse({'error': 'Оплата уже существует'}, status=400)
-
-        payment = Payment.objects.create(
-            student=student,
-            lesson=lesson,
-            amount=amount,
-            payment_date=lesson.date,
-            payment_method=method,
-            is_balance_payment=False,
-        )
-
-        if amount > lesson.lesson_price:
-            student.add_prepaid_balance(amount - lesson.lesson_price)
-
-        student.auto_pay_debt_from_prepaid()
-        student.refresh_from_db()
-        return JsonResponse({
-            'attendance_status': 'present',
-            'payment': _payment_to_dict(payment),
-            'student_balance': str(student.prepaid_balance),
-            'lesson_price': str(lesson.lesson_price),
-        })
-
-    elif action == 'reset_payment':
-        payment = Payment.objects.filter(lesson=lesson, student=student).first()
-        if payment:
-            if payment.is_balance_payment:
-                student.add_prepaid_balance(payment.amount)
-            elif payment.amount > lesson.lesson_price:
-                student.deduct_prepaid_balance(payment.amount - lesson.lesson_price)
-            payment.delete()
-
-        student.refresh_from_db()
-        return JsonResponse({
-            'attendance_status': 'present',
-            'payment': None,
-            'student_balance': str(student.prepaid_balance),
-            'lesson_price': str(lesson.lesson_price),
-        })
+    try:
+        if action == 'mark_present':
+            return JsonResponse(services.mark_present(lesson, student))
+        elif action == 'mark_absent':
+            return JsonResponse(services.mark_absent(lesson, student))
+        elif action == 'add_payment':
+            amount_raw = request.POST.get('amount', str(lesson.lesson_price))
+            method = request.POST.get('method', 'cash')
+            return JsonResponse(services.add_payment(lesson, student, amount_raw, method))
+        elif action == 'reset_payment':
+            return JsonResponse(services.reset_payment(lesson, student))
+    except ServiceError as e:
+        return JsonResponse({'error': e.message}, status=e.status)
 
     return JsonResponse({'error': 'Неизвестное действие'}, status=400)
+
+
+@login_required
+def cancel_lesson(request, pk):
+    """AJAX: отмена занятия с сохранением причины"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    tutor = get_tutor(request)
+    lesson = get_object_or_404(Lesson, pk=pk, tutor=tutor)
+
+    reason = request.POST.get('reason', '')
+    note = request.POST.get('note', '')
+
+    try:
+        result = services.cancel_lesson(lesson, reason, note)
+    except ServiceError as e:
+        return JsonResponse({'error': e.message}, status=e.status)
+
+    return JsonResponse(result)
+
+
+@login_required
+def restore_lesson(request, pk):
+    """AJAX: восстановление отменённого занятия"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    tutor = get_tutor(request)
+    lesson = get_object_or_404(Lesson, pk=pk, tutor=tutor)
+
+    result = services.restore_lesson(lesson)
+
+    return JsonResponse(result)
 
 
 def register(request):

@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>Занятие</h1>
+    <h1>Занятие{% if lesson.status == 'cancelled' %} <span class="cancelled-badge">Отменено</span>{% endif %}</h1>
     <div class="page-actions">
         <a href="{% url 'calendar' %}" class="btn btn-secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -12,6 +12,14 @@
             </svg>
             Назад
         </a>
+        {% if lesson.status == 'cancelled' %}
+        <button class="btn btn-success" onclick="openRestoreModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+            Восстановить
+        </button>
+        {% else %}
         <a href="{% url 'lesson_edit' lesson.pk %}" class="btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -19,6 +27,13 @@
             </svg>
             Редактировать
         </a>
+        <button class="btn btn-warning" onclick="openCancelModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+            Отменить
+        </button>
+        {% endif %}
         <a href="{% url 'lesson_delete' lesson.pk %}" class="btn btn-danger">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3 6 5 6 21 6"/>
@@ -28,6 +43,24 @@
         </a>
     </div>
 </div>
+
+{% if lesson.status == 'cancelled' %}
+<div class="cancellation-banner">
+    <div class="cancellation-banner-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+        </svg>
+    </div>
+    <div>
+        <div class="cancellation-banner-title">Занятие отменено</div>
+        {% if lesson.cancellation_reason %}
+        <div class="cancellation-banner-reason">{{ lesson.get_cancellation_reason_display }}{% if lesson.cancellation_note %} — {{ lesson.cancellation_note }}{% endif %}</div>
+        {% elif lesson.cancellation_note %}
+        <div class="cancellation-banner-reason">{{ lesson.cancellation_note }}</div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 
 <div class="card">
     <div class="card-header">
@@ -151,6 +184,116 @@
 </div>
 
 <style>
+/* Бейдж «Отменено» в заголовке */
+.cancelled-badge {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(220,38,38,0.1);
+    color: var(--danger);
+    vertical-align: middle;
+    margin-left: 8px;
+}
+
+/* Баннер отмены */
+.cancellation-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(220,38,38,0.07);
+    border: 1.5px solid rgba(220,38,38,0.25);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    color: var(--danger);
+}
+.cancellation-banner-icon { flex-shrink: 0; margin-top: 1px; }
+.cancellation-banner-title { font-weight: 700; font-size: 15px; }
+.cancellation-banner-reason { font-size: 14px; margin-top: 3px; opacity: 0.85; }
+
+/* Кнопка «Отменить» (предупреждение) */
+.btn-warning {
+    background: rgba(234,179,8,0.12);
+    color: #854d0e;
+    border: 1.5px solid #ca8a04;
+}
+.btn-warning:hover { background: #ca8a04; color: #fff; }
+
+/* Кнопка «Восстановить» */
+.btn-success {
+    background: rgba(48,178,126,0.12);
+    color: var(--success);
+    border: 1.5px solid var(--success);
+}
+.btn-success:hover { background: var(--success); color: #fff; }
+
+/* Модальное окно */
+.cl-modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+.cl-modal-overlay.open { display: flex; }
+.cl-modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 28px 28px 24px;
+    width: 100%;
+    max-width: 440px;
+    margin: 16px;
+}
+.cl-modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: var(--text);
+}
+.cl-reason-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.cl-reason-btn {
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    line-height: 1.3;
+}
+.cl-reason-btn:hover { border-color: var(--primary); color: var(--primary); }
+.cl-reason-btn.selected { border-color: var(--danger); background: rgba(220,38,38,0.08); color: var(--danger); font-weight: 600; }
+.cl-note-input {
+    width: 100%; box-sizing: border-box;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text);
+    font-size: 14px; font-family: inherit;
+    resize: vertical; min-height: 68px;
+    margin-bottom: 18px;
+}
+.cl-note-input:focus { outline: none; border-color: var(--primary); }
+.cl-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
 @media (max-width: 768px) {
     .desktop-table { display: none; }
 
@@ -406,5 +549,98 @@ document.addEventListener('DOMContentLoaded', () => {
     STUDENTS.forEach(s => renderStudent(s.pk, s));
     updateStats();
 });
+
+// ── Отмена занятия ──
+const CANCEL_URL  = '{% url "cancel_lesson"  lesson.pk %}';
+const RESTORE_URL = '{% url "restore_lesson" lesson.pk %}';
+let selectedReason = '';
+
+function openCancelModal() {
+    selectedReason = '';
+    document.querySelectorAll('.cl-reason-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('cl-note').value = '';
+    document.getElementById('cl-modal-cancel').classList.add('open');
+}
+function closeCancelModal() {
+    document.getElementById('cl-modal-cancel').classList.remove('open');
+}
+function selectReason(btn, value) {
+    document.querySelectorAll('.cl-reason-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedReason = value;
+}
+async function submitCancel() {
+    const note = document.getElementById('cl-note').value.trim();
+    const fd = new FormData();
+    fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+    fd.append('reason', selectedReason);
+    fd.append('note', note);
+    try {
+        const r = await fetch(CANCEL_URL, { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.error) { alert(d.error); return; }
+        location.reload();
+    } catch(e) { alert('Ошибка соединения'); }
+}
+
+function openRestoreModal() {
+    document.getElementById('cl-modal-restore').classList.add('open');
+}
+function closeRestoreModal() {
+    document.getElementById('cl-modal-restore').classList.remove('open');
+}
+async function submitRestore() {
+    const fd = new FormData();
+    fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+    try {
+        const r = await fetch(RESTORE_URL, { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.error) { alert(d.error); return; }
+        location.reload();
+    } catch(e) { alert('Ошибка соединения'); }
+}
+
+// Закрытие по клику на оверлей
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('cl-modal-cancel').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeCancelModal();
+    });
+    document.getElementById('cl-modal-restore').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeRestoreModal();
+    });
+});
 </script>
+
+<!-- Модалка: отмена занятия -->
+<div class="cl-modal-overlay" id="cl-modal-cancel">
+    <div class="cl-modal">
+        <div class="cl-modal-title">Отменить занятие</div>
+        <div class="cl-reason-grid">
+            <button class="cl-reason-btn" onclick="selectReason(this, 'air_alert')">🚨 Воздушная тревога / атака БПЛ</button>
+            <button class="cl-reason-btn" onclick="selectReason(this, 'student_sick')">🤒 Ученик заболел</button>
+            <button class="cl-reason-btn" onclick="selectReason(this, 'tutor_sick')">🤧 Репетитор заболел</button>
+            <button class="cl-reason-btn" onclick="selectReason(this, 'student_request')">📋 Просьба ученика</button>
+            <button class="cl-reason-btn" onclick="selectReason(this, 'rescheduled')">📅 Перенос</button>
+            <button class="cl-reason-btn" onclick="selectReason(this, 'other')">💬 Другое</button>
+        </div>
+        <textarea class="cl-note-input" id="cl-note" placeholder="Заметка (необязательно)"></textarea>
+        <div class="cl-modal-actions">
+            <button class="btn btn-secondary" onclick="closeCancelModal()">Назад</button>
+            <button class="btn btn-danger" onclick="submitCancel()">Отменить занятие</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: восстановление занятия -->
+<div class="cl-modal-overlay" id="cl-modal-restore">
+    <div class="cl-modal">
+        <div class="cl-modal-title">Восстановить занятие?</div>
+        <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 22px;">Занятие снова станет активным. Балансовые платежи не восстанавливаются автоматически.</p>
+        <div class="cl-modal-actions">
+            <button class="btn btn-secondary" onclick="closeRestoreModal()">Назад</button>
+            <button class="btn btn-success" onclick="submitRestore()">Восстановить</button>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

@@ -341,16 +341,39 @@
         background: var(--primary-hover);
         transform: translateX(1px);
     }
-    
+
     .lesson-item a {
         color: #fff;
         text-decoration: none;
         display: block;
         width: 100%;
     }
-    
+
     .lesson-item a:hover {
         text-decoration: none;
+    }
+
+    .lesson-item.cancelled {
+        background: var(--text-muted, #9ca3af);
+        box-shadow: none;
+        opacity: 0.7;
+    }
+    .lesson-item.cancelled a {
+        text-decoration: line-through;
+        opacity: 0.85;
+    }
+    .lesson-item.cancelled:hover {
+        background: #6b7280;
+        transform: none;
+    }
+
+    .calendar-mobile-lesson.cancelled {
+        background: var(--text-muted, #9ca3af);
+        box-shadow: none;
+        opacity: 0.7;
+    }
+    .calendar-mobile-lesson.cancelled a {
+        text-decoration: line-through;
     }
     
     .lesson-count {
@@ -711,9 +734,9 @@
                     </div>
                     {% if day.lessons %}
                         {% for lesson in day.lessons|slice:":3" %}
-                        <div class="lesson-item" onclick="event.stopPropagation(); window.location.href='{% url 'lesson_detail' lesson.pk %}'">
+                        <div class="lesson-item{% if lesson.status == 'cancelled' %} cancelled{% endif %}" onclick="event.stopPropagation(); window.location.href='{% url 'lesson_detail' lesson.pk %}'">
                             <a href="{% url 'lesson_detail' lesson.pk %}" onclick="event.stopPropagation();">
-                                {{ lesson.time|time:"H:i" }} - 
+                                {{ lesson.time|time:"H:i" }} -
                                 {% for student in lesson.students.all|slice:":2" %}
                                     {{ student.last_name }}{% if not forloop.last %}, {% endif %}
                                 {% endfor %}
@@ -817,10 +840,10 @@
             </div>
             {% if day.lessons %}
                 {% for lesson in day.lessons %}
-                <div class="calendar-mobile-lesson">
+                <div class="calendar-mobile-lesson{% if lesson.status == 'cancelled' %} cancelled{% endif %}">
                     <a href="{% url 'lesson_detail' lesson.pk %}">
                         <div class="calendar-mobile-lesson-time">
-                            {{ lesson.time|time:"H:i" }}
+                            {{ lesson.time|time:"H:i" }}{% if lesson.status == 'cancelled' %} — отменено{% endif %}
                         </div>
                         <div class="calendar-mobile-lesson-students">
                             {% for student in lesson.students.all %}
